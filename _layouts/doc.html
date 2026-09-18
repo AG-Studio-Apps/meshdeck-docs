@@ -1,0 +1,26 @@
+---
+layout: default
+---
+<div class="container doc">
+  {% include sidebar.html %}
+  <article class="doc__body">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ '/manual/overview/' | relative_url }}">Manual</a><span aria-hidden="true">/</span><span>{{ page.title }}</span></nav>
+    <header class="page__head">
+      <h1>{{ page.title }}</h1>
+      {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
+    </header>
+    <div class="prose" data-toc>
+{{ content }}
+    </div>
+    {% assign all = "" | split: "" %}
+    {% for group in site.data.manual %}{% for p in group.pages %}{% assign all = all | push: p %}{% endfor %}{% endfor %}
+    {% for p in all %}{% capture u %}/manual/{{ p.id }}/{% endcapture %}{% if u == page.url %}
+    <nav class="pager" aria-label="Manual pages">
+      {% assign pi = forloop.index0 | minus: 1 %}{% assign prev = all[pi] %}{% assign next = all[forloop.index] %}
+      {% if forloop.index0 > 0 %}<a class="pager__prev" href="{{ '/manual/' | append: prev.id | append: '/' | relative_url }}"><small>Previous</small>{{ prev.title }}</a>{% else %}<span></span>{% endif %}
+      {% if next %}<a class="pager__next" href="{{ '/manual/' | append: next.id | append: '/' | relative_url }}"><small>Next</small>{{ next.title }}</a>{% endif %}
+    </nav>
+    {% endif %}{% endfor %}
+    <p class="doc__help">Something missing or wrong? <a href="mailto:{{ site.contact_email }}?subject=meshDeck manual: {{ page.title }}">Tell us</a>.</p>
+  </article>
+</div>

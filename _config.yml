@@ -1,0 +1,49 @@
+title: meshDeck
+tagline: Your whole fleet. One glance.
+description: >-
+  meshDeck is a native iPhone and iPad app for Docker and Portainer hosts. See every
+  container at a glance, find what's broken on a live map, and fix it, over Tailscale
+  or SSH with no port exposed and no account to create.
+lang: en-GB
+url: "https://meshdeck.ag-applications.com"
+baseurl: ""
+
+# Set to the App Store URL on release; the buttons that use it stay hidden until then.
+app_store_url: ""
+contact_email: james@ag-applications.com
+company: "AG Applications LTD"
+company_number: "17447911"
+# Shown at the top of the Privacy Policy and the EULA. Set on publication.
+legal_effective: "18 September 2026"
+legal_version: "1.0"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+collections:
+  manual:
+    output: true
+    permalink: /manual/:name/
+
+defaults:
+  - scope: { path: "", type: "pages" }
+    values: { layout: "page" }
+  - scope: { path: "", type: "manual" }
+    values: { layout: "doc" }
+
+social:
+  name: meshDeck
+logo: /assets/img/icon-512.png
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
+  - node_modules

@@ -1,0 +1,35 @@
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <img src="{{ '/assets/img/icon-180.png' | relative_url }}" alt="" width="36" height="36">
+      <div>
+        <strong>meshDeck</strong>
+        <p>Container management for iPhone and iPad.</p>
+      </div>
+    </div>
+    <nav class="footer__cols" aria-label="Footer">
+      <div>
+        <h4>Product</h4>
+        <a href="{{ '/get-started/' | relative_url }}">Get started</a>
+        <a href="{{ '/manual/overview/' | relative_url }}">Manual</a>
+        <a href="{{ '/security/' | relative_url }}">Security</a>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <a href="{{ '/support/' | relative_url }}">Support</a>
+        <a href="{{ '/manual/troubleshooting/' | relative_url }}">Troubleshooting</a>
+        <a href="mailto:{{ site.contact_email }}">Contact</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="{{ '/privacy/' | relative_url }}">Privacy Policy</a>
+        <a href="{{ '/eula/' | relative_url }}">Licence Agreement</a>
+      </div>
+    </nav>
+  </div>
+  <div class="container footer__legal">
+    <p>&copy; {{ site.time | date: "%Y" }} {{ site.company }}, company number {{ site.company_number }}. All rights reserved.</p>
+    <p>Docker, Portainer and Tailscale are trademarks of their respective owners. meshDeck is independent and is not affiliated with or endorsed by them. Apple, iPhone and iPad are trademarks of Apple Inc.</p>
+  </div>
+</footer>
+<script src="{{ '/assets/js/site.js' | relative_url }}" defer></script>

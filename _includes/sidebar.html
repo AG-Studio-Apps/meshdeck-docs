@@ -1,0 +1,14 @@
+<aside class="sidebar" aria-label="Manual">
+  <button class="sidebar__toggle" aria-expanded="false" aria-controls="sidebar-list">Manual contents</button>
+  <div id="sidebar-list" class="sidebar__list">
+    {% for group in site.data.manual %}
+    <h4>{{ group.group }}</h4>
+    <ul>
+      {% for p in group.pages %}
+      {% capture url %}/manual/{{ p.id }}/{% endcapture %}
+      <li><a href="{{ url | relative_url }}" {% if page.url == url %}aria-current="page"{% endif %}>{{ p.title }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+  </div>
+</aside>

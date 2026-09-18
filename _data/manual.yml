@@ -1,0 +1,28 @@
+# Sidebar order for the manual. `id` is the file name in _manual/ (without .md).
+- group: Start here
+  pages:
+    - { id: overview,        title: Overview }
+    - { id: adding-a-host,   title: Adding a host }
+    - { id: tailscale,       title: Tailscale }
+- group: Your fleet
+  pages:
+    - { id: fleet,           title: Fleet }
+    - { id: container,       title: A container }
+    - { id: logs,            title: Logs }
+    - { id: terminal,        title: Terminal }
+    - { id: topology,        title: Topology }
+- group: Deploy
+  pages:
+    - { id: stacks,          title: Stacks and templates }
+    - { id: builder,         title: The canvas builder }
+    - { id: systems,         title: Systems }
+    - { id: vault,           title: The vault }
+- group: Diagnose
+  pages:
+    - { id: diagnosis,       title: AI diagnosis }
+    - { id: alerts,          title: Instant alerts }
+- group: More
+  pages:
+    - { id: ipad,            title: iPad and shortcuts }
+    - { id: pro,             title: Free and Pro }
+    - { id: troubleshooting, title: Troubleshooting }

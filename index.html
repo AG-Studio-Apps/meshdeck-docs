@@ -1,0 +1,191 @@
+---
+layout: default
+title: meshDeck
+description: "See every container on every host at a glance, find what's broken on a live map, and fix it. A native iPhone and iPad app for Docker and Portainer, over Tailscale or SSH with no port exposed."
+body_class: home
+---
+<section class="hero">
+  <div class="container">
+    <div class="hero__copy">
+      <p class="eyebrow">Container management for iPhone and iPad</p>
+      <h1>Your whole fleet.<br><span class="grad">One glance.</span></h1>
+      <p class="lede">meshDeck shows every container on every host, finds what's broken on a live map, and helps you fix it. Over Tailscale or SSH, with no port exposed and no account to create.</p>
+      <div class="hero__cta">
+        {% if site.app_store_url != "" %}<a class="btn" href="{{ site.app_store_url }}">Download on the App Store</a>{% endif %}
+        <a class="btn {% if site.app_store_url != '' %}btn--ghost{% endif %}" href="{{ '/get-started/' | relative_url }}">Get started</a>
+        <a class="btn btn--ghost" href="{{ '/manual/overview/' | relative_url }}">Read the manual</a>
+      </div>
+      <div class="chips">
+        <span class="chip">No exposed daemon</span>
+        <span class="chip">Tailscale &amp; SSH</span>
+        <span class="chip">No account</span>
+        <span class="chip">Keys stay in your Keychain</span>
+      </div>
+    </div>
+    <div class="hero__stage" aria-hidden="true">
+      <img src="{{ '/assets/img/frames/iphone-02-topology.webp' | relative_url }}" alt="" width="720" height="1565" loading="eager">
+      <img src="{{ '/assets/img/frames/iphone-01-fleet-healthy.webp' | relative_url }}" alt="" width="720" height="1565" loading="eager">
+      <img src="{{ '/assets/img/frames/iphone-03-diagnosis.webp' | relative_url }}" alt="" width="720" height="1565" loading="eager">
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section__head">
+      <p class="eyebrow">What it does</p>
+      <h2>Everything you reach for, in one app.</h2>
+      <p>Docker and Portainer hosts, side by side. Built native for iPhone and iPad, so it is fast and reads at a glance.</p>
+    </div>
+    <div class="grid grid--3">
+      <div class="card">{% include icon.html name="fleet" %}<h3>Fleet at a glance</h3><p>Every host and container as a live card with status and CPU, and memory and history a tap away. Colour is never the only signal.</p></div>
+      <div class="card">{% include icon.html name="map" %}<h3>A live map</h3><p>Networks, mounts and dependencies drawn as a graph, with the broken link marked.</p></div>
+      <div class="card">{% include icon.html name="spark" %}<h3>Ask why</h3><p>Bring your own AI key and get a plain-English cause with actions the app can perform. Nothing runs until you tap it.</p></div>
+      <div class="card">{% include icon.html name="logs" %}<h3>Logs that read themselves</h3><p>Levels coloured, errors flagged, a filter inside, and a switch for errors and warnings.</p></div>
+      <div class="card">{% include icon.html name="terminal" %}<h3>A terminal in the container</h3><p>Open a shell in a running container without leaving the app.</p></div>
+      <div class="card">{% include icon.html name="canvas" %}<h3>Draw a stack</h3><p>Services, wires and volumes on a canvas become a compose file you can deploy.</p></div>
+      <div class="card">{% include icon.html name="layers" %}<h3>Systems</h3><p>Group stacks across hosts, then deploy in order and stop or start them as one.</p></div>
+      <div class="card">{% include icon.html name="key" %}<h3>A vault for secrets</h3><p>Passwords and keys live in your Keychain and are referenced by name, never pasted into YAML.</p></div>
+      <div class="card">{% include icon.html name="shield" %}<h3>Trust on first use</h3><p>Host keys and certificates are pinned. If one changes, the connection waits for you.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container">
+    <div class="split">
+      <div>
+        <p class="eyebrow">Find it</p>
+        <h3>See what's broken, and why.</h3>
+        <p>A restart loop rises to the top of the fleet instead of hiding in a list. Open the topology and the failing link is marked on the map, with the containers on either side of it.</p>
+        <ul>
+          <li>Dependencies, networks and mounts as a live graph</li>
+          <li>Group by stack or network</li>
+          <li>One tap from a red node to the diagnosis</li>
+        </ul>
+      </div>
+      <div class="split__img"><img src="{{ '/assets/img/shots/iphone-03-topology.webp' | relative_url }}" alt="The topology tab: a graph of the media stack with a failing link between sonarr and postgres marked in red" width="560" height="1217" loading="lazy"></div>
+    </div>
+    <div class="split split--flip">
+      <div>
+        <p class="eyebrow">Fix it</p>
+        <h3>Ask why. Get a fix.</h3>
+        <p>meshDeck sends a redacted evidence bundle to the AI provider you chose, with your own key, and only after you agree. You get a plain-English cause and actions the app already knows how to do.</p>
+        <ul>
+          <li>Anthropic, or any OpenAI-compatible server, including one on your own network</li>
+          <li>Nothing runs until you tap it, and there is no chat</li>
+          <li>No shell, and no way to run a command, for the model</li>
+        </ul>
+        <p><a href="{{ '/manual/diagnosis/' | relative_url }}">How diagnosis works</a> · <a href="{{ '/security/' | relative_url }}">What is sent</a></p>
+      </div>
+      <div class="split__img"><img src="{{ '/assets/img/shots/iphone-04-diagnosis.webp' | relative_url }}" alt="The diagnosis sheet explaining that sonarr cannot reach postgres because of a stale password, with actions to rotate the secret and open the logs" width="560" height="1217" loading="lazy"></div>
+    </div>
+    <div class="split">
+      <div>
+        <p class="eyebrow">Deploy it</p>
+        <h3>Draw a stack. Deploy it.</h3>
+        <p>Drop services onto a canvas, wire them together, add volumes and networks, and meshDeck writes the compose file. Deploy to a host, or save the draft and come back to it.</p>
+        <ul>
+          <li>Templates, a Git repository, or a compose file of your own</li>
+          <li>Group stacks across hosts into a system, deployed in order</li>
+          <li>Secrets referenced by name, sent to the host only at deploy</li>
+        </ul>
+      </div>
+      <div class="split__img"><img src="{{ '/assets/img/shots/iphone-07-builder.webp' | relative_url }}" alt="The canvas builder showing a web service, a database and a volume wired together" width="560" height="1217" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="connect">
+  <div class="container">
+    <div class="section__head">
+      <p class="eyebrow">How it connects</p>
+      <h2>Nothing exposed. Nothing in the middle.</h2>
+      <p>meshDeck reaches your hosts the way careful people do. It never asks you to open Docker's API to the internet, and there is no server of ours between your phone and your hosts.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 960 330" role="img" aria-label="Diagram: the meshDeck app reaches a host over Tailscale or an SSH tunnel to the Docker socket, or over HTTPS to Portainer. An exposed Docker port on TCP 2375 is crossed out.">
+        <rect class="d-box" x="24" y="90" width="220" height="150" rx="18"/>
+        <text x="134" y="150" text-anchor="middle" font-size="22" font-weight="700">meshDeck</text>
+        <text class="d-dim" x="134" y="180" text-anchor="middle" font-size="15">on your iPhone or iPad</text>
+        <text class="d-dim d-mono" x="134" y="212" text-anchor="middle" font-size="12">keys in the Keychain</text>
+
+        <path class="d-line" d="M244 130 C 360 130, 400 96, 520 96"/>
+        <text class="d-mono" x="382" y="78" text-anchor="middle" font-size="13" fill="#ff9a4a">Tailscale · WireGuard</text>
+        <path class="d-line" d="M244 165 L 520 165"/>
+        <text class="d-mono" x="382" y="156" text-anchor="middle" font-size="13" fill="#ff9a4a">SSH tunnel</text>
+        <path class="d-line" d="M244 200 C 360 200, 400 240, 520 240"/>
+        <text class="d-mono" x="382" y="266" text-anchor="middle" font-size="13" fill="#ff9a4a">HTTPS + API token</text>
+
+        <rect class="d-box" x="520" y="60" width="416" height="210" rx="18"/>
+        <text x="546" y="96" font-size="18" font-weight="700">Your host</text>
+        <rect class="d-box" x="546" y="112" width="180" height="52" rx="10"/>
+        <text x="636" y="144" text-anchor="middle" font-size="15">Docker socket</text>
+        <text class="d-dim d-mono" x="636" y="184" text-anchor="middle" font-size="12">stays on the host</text>
+        <rect class="d-box" x="746" y="112" width="166" height="52" rx="10"/>
+        <text x="829" y="144" text-anchor="middle" font-size="15">Portainer</text>
+        <text class="d-dim d-mono" x="829" y="184" text-anchor="middle" font-size="12">optional</text>
+        <path class="d-line d-bad" d="M546 230 L 912 230"/>
+        <text class="d-mono" x="729" y="252" text-anchor="middle" font-size="13" fill="#ff5d5d">TCP 2375 · never asked to open</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head">
+      <p class="eyebrow">On iPad</p>
+      <h2>The whole picture, one screen.</h2>
+      <p>Regular width becomes a cockpit: hosts and stacks on the left, containers in the middle, and the container you care about on the right.</p>
+    </div>
+    <div class="split__img split__img--wide"><img src="{{ '/assets/img/frames/ipad-01-cockpit.webp' | relative_url }}" alt="meshDeck on iPad: a sidebar of hosts and stacks, a list of containers, and the detail of a container with live stats" width="1400" height="1050" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section__head">
+      <p class="eyebrow">Free and Pro</p>
+      <h2>Free for one host, with everything.</h2>
+      <p>The only thing that costs money is more than one host.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <h3>meshDeck</h3><p class="sub">Free</p>
+        <ul><li>One host</li><li>Every feature</li><li>No account, no ads</li></ul>
+      </div>
+      <div class="plan plan--pro">
+        <h3>meshDeck Pro</h3><p class="sub">Annual subscription</p>
+        <ul><li>Unlimited hosts</li><li>Systems across hosts</li><li>The price is shown in the app before you subscribe</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="faq">
+  <div class="container container--narrow">
+    <div class="section__head"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
+    <div class="faq">
+      <details><summary>Does my data go through your servers?</summary><div><p>No. meshDeck connects from your phone straight to your hosts over Tailscale, SSH or HTTPS, and your keys stay in your iPhone's Keychain.</p><p>Two optional features do contact other services, and only when you switch them on: AI diagnosis sends a redacted bundle to the provider you chose, and Instant alerts use a small relay so a push notification can reach your phone. The <a href="{{ '/privacy/' | relative_url }}">Privacy Policy</a> spells out both.</p></div></details>
+      <details><summary>Do I need an account?</summary><div><p>No. There is nothing to sign up for. Pro is bought through the App Store like any subscription.</p></div></details>
+      <details><summary>What does meshDeck work with?</summary><div><p>Docker hosts reached over SSH (including Tailscale SSH, where no key is needed), Portainer over HTTPS with an access token, and an advanced mode that drives the docker command line over SSH with sudo support.</p><p>Podman's Docker-compatible API is not something we have tested, so we don't claim it.</p></div></details>
+      <details><summary>Do I need the Tailscale app?</summary><div><p>No. meshDeck has a built-in Tailscale node, so a host on your tailnet can be reached without the Tailscale app. If you already use the Tailscale app, meshDeck works with it too.</p></div></details>
+      <details><summary>What does the AI see?</summary><div><p>Only what you allow, and only after you agree: container details and a recent slice of logs and stats, with secrets masked before anything leaves the phone. It never receives a vault value, and it cannot run a command. <a href="{{ '/security/' | relative_url }}">The details are on the Security page.</a></p></div></details>
+      <details><summary>Is it affiliated with Docker, Portainer or Tailscale?</summary><div><p>No. They are trademarks of their respective owners, and meshDeck is an independent app that works with them.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta">
+      <h2>See your fleet in a minute.</h2>
+      <p>Add a host, and every container on it is on your screen. No account, nothing to open on the host.</p>
+      <div class="hero__cta">
+        {% if site.app_store_url != "" %}<a class="btn" href="{{ site.app_store_url }}">Download on the App Store</a>{% endif %}
+        <a class="btn {% if site.app_store_url != '' %}btn--ghost{% endif %}" href="{{ '/get-started/' | relative_url }}">Get started</a>
+      </div>
+    </div>
+  </div>
+</section>

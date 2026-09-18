@@ -1,0 +1,21 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="nav">
+  <div class="nav__inner container">
+    <a class="nav__brand" href="{{ '/' | relative_url }}" aria-label="meshDeck home">
+      <img src="{{ '/assets/img/icon-180.png' | relative_url }}" alt="" width="30" height="30">
+      <span>meshDeck</span>
+    </a>
+    <button class="nav__toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span>
+    </button>
+    <nav id="nav-links" class="nav__links" aria-label="Main">
+      <a href="{{ '/get-started/' | relative_url }}" {% if page.url contains '/get-started' %}aria-current="page"{% endif %}>Get started</a>
+      <a href="{{ '/manual/overview/' | relative_url }}" {% if page.collection == 'manual' %}aria-current="page"{% endif %}>Manual</a>
+      <a href="{{ '/security/' | relative_url }}" {% if page.url contains '/security' %}aria-current="page"{% endif %}>Security</a>
+      <a href="{{ '/support/' | relative_url }}" {% if page.url contains '/support' %}aria-current="page"{% endif %}>Support</a>
+      {% if site.app_store_url != "" %}
+      <a class="btn btn--sm" href="{{ site.app_store_url }}">App Store</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
