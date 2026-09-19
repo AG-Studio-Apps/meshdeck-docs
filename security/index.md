@@ -48,7 +48,7 @@ Alerts are opt-in, and today only the enrolment and a test alert exist.
 
 We would rather say it than have you find it.
 
-- **A phone that someone else can unlock.** meshDeck has no lock of its own. Anyone who can use your unlocked phone can use your hosts.
+- **A phone that someone else can unlock.** Anyone who can use your unlocked phone can use your hosts. meshDeck has an optional lock (Settings → Lock) that covers the app in the app switcher and asks for Face ID, Touch ID or your passcode before it opens; it is off until you turn it on, and it protects the screen, not the Keychain — the device passcode is still what protects that.
 - **Whoever can reach your hosts.** A vault value on a host is only as safe as that host.
 - **Plain values in drafts.** Environment values you typed in plain, rather than from the vault, are stored as you typed them in your drafts and systems on the phone, and are included in device backups. Use the vault for anything sensitive.
 - **Backups.** A device backup includes the non-secret app data (your host list, drafts, settings). Keychain secrets are marked this-device-only and are not restored elsewhere.

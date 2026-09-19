@@ -158,7 +158,7 @@ The App includes open source components that run on your phone and send nothing 
 
 **On your phone,** everything is yours to remove. Deleting a host removes its stored credentials and its alert enrolment. Deleting the App removes its storage. iOS may keep Keychain items after an app is deleted, so remove secrets you care about in the App first (Settings → Vault, and each host).
 
-**On the relay,** there is currently no automatic expiry. A record stays until you turn Instant alerts off, remove the host, or Apple tells us your push token is no longer valid, at which point we delete it. Turning alerts off deletes your phone's record and any host that no longer has a phone attached. If you delete the App without turning alerts off, your record may remain on the relay, and you can ask us to delete it (section 16).
+**On the relay,** a record stays until you turn Instant alerts off, remove the host, or Apple tells us your push token is no longer valid, at which point we delete it. The relay also collects records that can no longer be used: a host with no phone attached to it, and a phone record more than a day old that has never enrolled a host. So an abandoned record does not sit there indefinitely. Turning alerts off deletes your phone's record and any host that no longer has a phone attached. If you delete the App without turning alerts off, your record may remain on the relay, and you can ask us to delete it (section 16).
 
 **On your hosts,** the App only deletes what it created under `~/.meshdeck/stacks/`, and only when you remove a stack. It never deletes anything you did not ask it to.
 

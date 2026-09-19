@@ -47,11 +47,11 @@ Only **Down** and **Unhealthy** count as "needs attention" on the summary card.
 
 We would rather you know before you install:
 
-- No Face ID or passcode lock inside the app, no widgets, and no Siri Shortcuts.
+- No widgets and no Siri Shortcuts. There *is* an optional lock — see Settings → Lock — which covers the app when it goes to the background and asks for Face ID, Touch ID or your passcode before it opens again. It is off until you turn it on.
 - No iCloud sync. Your hosts, drafts and settings live on the device.
 - No automatic discovery of hosts. You add each one by hand.
 - No light mode. The app is dark.
-- No editing of a saved host. To change its address or sign-in, remove it and add it again. You can change how it is reached, its sudo settings and its alerts.
+- No changing a saved host's sign-in method. You can edit its name, address, port and username (swipe a host right in Settings, or press and hold it), and change how it is reached, its sudo settings and its alerts — but to sign in a different way, remove it and add it again.
 - Images, volumes and networks are read-only. You can browse them, but not delete, prune or pull.
 - Docker Swarm stacks are not supported.
 - SSH keys must be Ed25519 or ECDSA and have no passphrase. RSA keys are not supported.
