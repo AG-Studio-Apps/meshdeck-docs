@@ -26,9 +26,9 @@ If the phone cannot resolve a tailnet name without the Tailscale app and the bui
 
 ## Images, Volumes and Networks
 
-Three tiles show a count each. The caption turns amber to say how many images are **dangling** or volumes are **unused**. Tap one to browse a read-only list, with **Nothing here.** if it is empty. Tap an item for its detail: an image shows its ID, size, created date and tags, a volume its driver, scope and mountpoint, a network its driver, scope and whether it is internal or attachable. Each ends with the containers that use it, or "not used by any container".
+Three tiles show a count each. The caption turns amber to say how many images are **dangling** or volumes are **unused**. Tap one to browse the list, with **Nothing here.** if it is empty. Tap an item for its detail: an image shows its ID, size, created date and tags, a volume its driver, scope and mountpoint, a network its driver, scope and whether it is internal or attachable. Each ends with the containers that use it, or "not used by any container".
 
-You can browse these lists, and pull to refresh them, but not delete or prune anything from the app.
+From an item's detail you can **Remove** it — unless a container is using it, in which case the button says so and names what to remove first; built-in networks cannot be removed. The list's toolbar prunes **dangling** or all **unused** images, prunes **unused volumes** (which deletes their data, behind a clear confirmation), and creates a **new network**. Every deletion confirms first.
 
 ## Stacks
 

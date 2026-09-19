@@ -52,7 +52,7 @@ We would rather you know before you install:
 - No automatic discovery of hosts. You add each one by hand.
 - No light mode. The app is dark.
 - No changing a saved host's sign-in method. You can edit its name, address, port and username (swipe a host right in Settings, or press and hold it), and change how it is reached, its sudo settings and its alerts — but to sign in a different way, remove it and add it again.
-- Images, volumes and networks are read-only. You can browse them, but not delete, prune or pull.
+- No standalone image pull. Images pull when you deploy a container or stack, not on their own. (You *can* now remove and prune images and volumes, and create and remove networks — see Fleet.)
 - Docker Swarm stacks are not supported.
 - SSH keys must be Ed25519 or ECDSA and have no passphrase. RSA keys are not supported.
 - Git stacks use `https://` or `http://` URLs. Repositories that need an SSH key are not supported.
