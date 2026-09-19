@@ -1,0 +1,18 @@
+# Deploy every stack template in templates.json on the runner's Docker daemon
+# and confirm it comes up. Runs when the catalog changes, or by hand — so a
+# template with a dead image or broken compose fails here, not on someone's host.
+name: Test stack templates
+on:
+  push:
+    paths: ["templates.json", "scripts/test-templates.py"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and check every template
+        run: python3 scripts/test-templates.py

@@ -321,7 +321,7 @@
    "category": "Databases",
    "symbol": "externaldrive",
    "version": 1,
-   "compose": "services:\n  minio:\n    image: minio/minio:latest\n    command: server /data --console-address \":9001\"\n    environment:\n      MINIO_ROOT_USER: ${ROOT_USER}\n      MINIO_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${API_PORT}:9000\"\n      - \"${CONSOLE_PORT}:9001\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "compose": "services:\n  minio:\n    image: quay.io/minio/minio:latest\n    command: server /data --console-address \":9001\"\n    environment:\n      MINIO_ROOT_USER: ${ROOT_USER}\n      MINIO_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${API_PORT}:9000\"\n      - \"${CONSOLE_PORT}:9001\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
    "variables": [
     {
      "key": "ROOT_USER",
