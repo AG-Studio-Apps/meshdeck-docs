@@ -1,6 +1,11 @@
 {
- "version": 2,
+ "version": 3,
  "categories": [
+  "Web & CMS",
+  "Media",
+  "Monitoring",
+  "Tools",
+  "Home",
   "Databases",
   "Downloads"
  ],
@@ -565,6 +570,383 @@
    "notes": [
     "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
    ]
+  },
+  {
+   "id": "navidrome",
+   "name": "Navidrome",
+   "tagline": "Music streaming server",
+   "category": "Media",
+   "symbol": "music.note",
+   "version": 1,
+   "compose": "services:\n  navidrome:\n    image: deluan/navidrome:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:4533\"\n    volumes:\n      - config:/config\n      - music:/music:ro\n    restart: unless-stopped\nvolumes:\n  config:\n  music:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "4533",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "audiobookshelf",
+   "name": "Audiobookshelf",
+   "tagline": "Audiobook & podcast server",
+   "category": "Media",
+   "symbol": "headphones",
+   "version": 1,
+   "compose": "services:\n  audiobookshelf:\n    image: ghcr.io/advplyr/audiobookshelf:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "13378",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "calibre-web",
+   "name": "Calibre-Web",
+   "tagline": "Browse and read your ebook library",
+   "category": "Media",
+   "symbol": "book",
+   "version": 1,
+   "compose": "services:\n  calibre-web:\n    image: lscr.io/linuxserver/calibre-web:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:8083\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8083",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "kavita",
+   "name": "Kavita",
+   "tagline": "Comics, manga and ebooks",
+   "category": "Media",
+   "symbol": "books.vertical",
+   "version": 1,
+   "compose": "services:\n  kavita:\n    image: lscr.io/linuxserver/kavita:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:5000\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "5000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "komga",
+   "name": "Komga",
+   "tagline": "Comics and manga server",
+   "category": "Media",
+   "symbol": "books.vertical",
+   "version": 1,
+   "compose": "services:\n  komga:\n    image: gotson/komga:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:25600\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "25600",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "jellyseerr",
+   "name": "Jellyseerr",
+   "tagline": "Requests for Jellyfin/Plex",
+   "category": "Media",
+   "symbol": "play.rectangle",
+   "version": 1,
+   "compose": "services:\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:5055\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "5055",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "mealie",
+   "name": "Mealie",
+   "tagline": "Recipe manager and meal planner",
+   "category": "Media",
+   "symbol": "fork.knife",
+   "version": 1,
+   "compose": "services:\n  mealie:\n    image: ghcr.io/mealie-recipes/mealie:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:9000\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "photoprism",
+   "name": "PhotoPrism",
+   "tagline": "AI-powered photo library",
+   "category": "Media",
+   "symbol": "photo",
+   "version": 1,
+   "compose": "services:\n  photoprism:\n    image: photoprism/photoprism:latest\n    environment:\n      PHOTOPRISM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n      PHOTOPRISM_DATABASE_DRIVER: sqlite\n    ports:\n      - \"${PORT}:2342\"\n    volumes:\n      - storage:/photoprism/storage\n      - originals:/photoprism/originals\n    restart: unless-stopped\nvolumes:\n  storage:\n  originals:\n",
+   "variables": [
+    {
+     "key": "ADMIN_PASSWORD",
+     "label": "Admin password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "2342",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "First login is 'admin' with the password you set. Point originals at your photos."
+   ]
+  },
+  {
+   "id": "netdata",
+   "name": "Netdata",
+   "tagline": "Real-time system metrics",
+   "category": "Monitoring",
+   "symbol": "chart.xyaxis.line",
+   "version": 1,
+   "compose": "services:\n  netdata:\n    image: netdata/netdata:latest\n    ports:\n      - \"${PORT}:19999\"\n    volumes:\n      - config:/etc/netdata\n      - lib:/var/lib/netdata\n    restart: unless-stopped\nvolumes:\n  config:\n  lib:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "19999",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Some deep metrics need extra host mounts; the dashboard works out of the box."
+   ]
+  },
+  {
+   "id": "dozzle",
+   "name": "Dozzle",
+   "tagline": "Live Docker log viewer",
+   "category": "Monitoring",
+   "symbol": "doc.text.magnifyingglass",
+   "version": 1,
+   "compose": "services:\n  dozzle:\n    image: amir20/dozzle:latest\n    ports:\n      - \"${PORT}:8080\"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock:ro\n    restart: unless-stopped\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Reads the Docker socket read-only to stream container logs."
+   ]
+  },
+  {
+   "id": "glances",
+   "name": "Glances",
+   "tagline": "System monitor in the browser",
+   "category": "Monitoring",
+   "symbol": "gauge",
+   "version": 1,
+   "compose": "services:\n  glances:\n    image: nicolargo/glances:latest\n    environment:\n      GLANCES_OPT: -w\n    ports:\n      - \"${PORT}:61208\"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock:ro\n    restart: unless-stopped\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "61208",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "beszel",
+   "name": "Beszel",
+   "tagline": "Lightweight server monitoring",
+   "category": "Monitoring",
+   "symbol": "chart.xyaxis.line",
+   "version": 1,
+   "compose": "services:\n  beszel:\n    image: henrygd/beszel:latest\n    ports:\n      - \"${PORT}:8090\"\n    volumes:\n      - data:/beszel_data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8090",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Add agents on the hosts you want to watch after first run."
+   ]
+  },
+  {
+   "id": "portainer",
+   "name": "Portainer",
+   "tagline": "Container management UI",
+   "category": "Monitoring",
+   "symbol": "square.grid.2x2",
+   "version": 1,
+   "compose": "services:\n  portainer:\n    image: portainer/portainer-ce:latest\n    ports:\n      - \"${PORT}:9000\"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Mounts the Docker socket read-write to manage this host \u2014 grant it deliberately."
+   ]
+  },
+  {
+   "id": "homepage",
+   "name": "Homepage",
+   "tagline": "A modern app dashboard",
+   "category": "Tools",
+   "symbol": "square.grid.2x2",
+   "version": 1,
+   "compose": "services:\n  homepage:\n    image: ghcr.io/gethomepage/homepage:latest\n    environment:\n      HOMEPAGE_ALLOWED_HOSTS: \"*\"\n    ports:\n      - \"${PORT}:3000\"\n    volumes:\n      - config:/app/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "3000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Edit the YAML under the config volume to add your services and widgets."
+   ]
+  },
+  {
+   "id": "it-tools",
+   "name": "IT-Tools",
+   "tagline": "A box of developer utilities",
+   "category": "Tools",
+   "symbol": "wrench.and.screwdriver",
+   "version": 1,
+   "compose": "services:\n  it-tools:\n    image: corentinth/it-tools:latest\n    ports:\n      - \"${PORT}:80\"\n    restart: unless-stopped\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "stirling-pdf",
+   "name": "Stirling-PDF",
+   "tagline": "Local PDF toolkit",
+   "category": "Tools",
+   "symbol": "doc.richtext",
+   "version": 1,
+   "compose": "services:\n  stirling-pdf:\n    image: stirlingtools/stirling-pdf:latest\n    ports:\n      - \"${PORT}:8080\"\n    volumes:\n      - data:/usr/share/tessdata\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "freshrss",
+   "name": "FreshRSS",
+   "tagline": "Self-hosted RSS reader",
+   "category": "Tools",
+   "symbol": "dot.radiowaves.up.forward",
+   "version": 1,
+   "compose": "services:\n  freshrss:\n    image: lscr.io/linuxserver/freshrss:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8081",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "actual",
+   "name": "Actual Budget",
+   "tagline": "Private budgeting",
+   "category": "Tools",
+   "symbol": "dollarsign.circle",
+   "version": 1,
+   "compose": "services:\n  actual:\n    image: actualbudget/actual-server:latest\n    ports:\n      - \"${PORT}:5006\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "5006",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
   }
  ]
 }
