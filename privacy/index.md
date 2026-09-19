@@ -176,7 +176,7 @@ If you are unhappy with how we have handled your data, you can complain to the U
 
 ## 14. Security
 
-The App stores secrets in the iOS Keychain, connects over SSH and TLS, pins host keys and certificates, and asks before its riskier actions. The relay stores secrets hashed, holds as little as it can, and runs with a restricted service profile. No system is perfectly secure, and we cannot promise that yours is. More detail is on the [Security page]({{ '/security/' | relative_url }}).
+The App stores secrets in the iOS Keychain, connects over SSH and TLS, pins host keys and certificates, and asks before its riskier actions. The relay hashes the secrets it issues, holds as little as it can, and runs with a restricted service profile. It stores your push token as it is, because Apple needs it to deliver a notification; the [Security page]({{ '/security/' | relative_url }}) explains what that means and what we are changing. No system is perfectly secure, and we cannot promise that yours is. More detail is on the [Security page]({{ '/security/' | relative_url }}).
 
 ## 15. Changes to this policy
 
