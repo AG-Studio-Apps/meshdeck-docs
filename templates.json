@@ -1,0 +1,570 @@
+{
+ "version": 2,
+ "categories": [
+  "Databases",
+  "Downloads"
+ ],
+ "templates": [
+  {
+   "id": "postgres",
+   "name": "PostgreSQL",
+   "tagline": "SQL database",
+   "category": "Databases",
+   "symbol": "cylinder.split.1x2",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_DB: ${DB_NAME}\n      POSTGRES_USER: ${DB_USER}\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    ports:\n      - \"${PORT}:5432\"\n    volumes:\n      - data:/var/lib/postgresql/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "DB_NAME",
+     "label": "Database",
+     "defaultValue": "app",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "DB_USER",
+     "label": "User",
+     "defaultValue": "postgres",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "DB_PASSWORD",
+     "label": "Password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "5432",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Reachable on the host port you set. Leave it internal by removing the port mapping if only other containers need it."
+   ]
+  },
+  {
+   "id": "mysql",
+   "name": "MySQL",
+   "tagline": "SQL database",
+   "category": "Databases",
+   "symbol": "cylinder.split.1x2",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: ${DB_NAME}\n      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:3306\"\n    volumes:\n      - data:/var/lib/mysql\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "DB_NAME",
+     "label": "Database",
+     "defaultValue": "app",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ROOT_PASSWORD",
+     "label": "Root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "3306",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The root password is required on first start."
+   ]
+  },
+  {
+   "id": "mariadb",
+   "name": "MariaDB",
+   "tagline": "SQL database (MySQL-compatible)",
+   "category": "Databases",
+   "symbol": "cylinder.split.1x2",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: mariadb:11\n    environment:\n      MARIADB_DATABASE: ${DB_NAME}\n      MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:3306\"\n    volumes:\n      - data:/var/lib/mysql\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "DB_NAME",
+     "label": "Database",
+     "defaultValue": "app",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ROOT_PASSWORD",
+     "label": "Root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "3306",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "mongo",
+   "name": "MongoDB",
+   "tagline": "Document database",
+   "category": "Databases",
+   "symbol": "cylinder.split.1x2",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: mongo:7\n    environment:\n      MONGO_INITDB_ROOT_USERNAME: ${ROOT_USER}\n      MONGO_INITDB_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:27017\"\n    volumes:\n      - data:/data/db\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "ROOT_USER",
+     "label": "Root user",
+     "defaultValue": "root",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ROOT_PASSWORD",
+     "label": "Root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "27017",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "redis",
+   "name": "Redis",
+   "tagline": "In-memory key-value store",
+   "category": "Databases",
+   "symbol": "bolt.horizontal",
+   "version": 1,
+   "compose": "services:\n  redis:\n    image: redis:7\n    command: redis-server --save 60 1\n    ports:\n      - \"${PORT}:6379\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "6379",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "No password by default. Add '--requirepass yourpassword' to the command for auth."
+   ]
+  },
+  {
+   "id": "influxdb",
+   "name": "InfluxDB",
+   "tagline": "Time-series database",
+   "category": "Databases",
+   "symbol": "chart.xyaxis.line",
+   "version": 1,
+   "compose": "services:\n  influxdb:\n    image: influxdb:2\n    environment:\n      DOCKER_INFLUXDB_INIT_MODE: setup\n      DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USER}\n      DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD}\n      DOCKER_INFLUXDB_INIT_ORG: ${ORG}\n      DOCKER_INFLUXDB_INIT_BUCKET: ${BUCKET}\n    ports:\n      - \"${PORT}:8086\"\n    volumes:\n      - data:/var/lib/influxdb2\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "ADMIN_USER",
+     "label": "Admin user",
+     "defaultValue": "admin",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ADMIN_PASSWORD",
+     "label": "Admin password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "ORG",
+     "label": "Organisation",
+     "defaultValue": "home",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "BUCKET",
+     "label": "Bucket",
+     "defaultValue": "default",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "8086",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The web UI and API are on the host port you set."
+   ]
+  },
+  {
+   "id": "adminer",
+   "name": "Adminer",
+   "tagline": "Web UI for SQL databases",
+   "category": "Databases",
+   "symbol": "tablecells",
+   "version": 1,
+   "compose": "services:\n  adminer:\n    image: adminer:4\n    ports:\n      - \"${PORT}:8080\"\n    restart: unless-stopped\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "A lightweight UI that connects to an existing database \u2014 enter the DB host, user and password when you open it."
+   ]
+  },
+  {
+   "id": "pgadmin",
+   "name": "pgAdmin",
+   "tagline": "Web UI for PostgreSQL",
+   "category": "Databases",
+   "symbol": "tablecells",
+   "version": 1,
+   "compose": "services:\n  pgadmin:\n    image: dpage/pgadmin4:latest\n    environment:\n      PGADMIN_DEFAULT_EMAIL: ${EMAIL}\n      PGADMIN_DEFAULT_PASSWORD: ${PASSWORD}\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - data:/var/lib/pgadmin\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "EMAIL",
+     "label": "Login email",
+     "defaultValue": "admin@example.com",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PASSWORD",
+     "label": "Login password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Host port",
+     "defaultValue": "5050",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "rabbitmq",
+   "name": "RabbitMQ",
+   "tagline": "Message broker with management UI",
+   "category": "Databases",
+   "symbol": "arrow.left.arrow.right",
+   "version": 1,
+   "compose": "services:\n  rabbitmq:\n    image: rabbitmq:3-management\n    environment:\n      RABBITMQ_DEFAULT_USER: ${USER}\n      RABBITMQ_DEFAULT_PASS: ${PASSWORD}\n    ports:\n      - \"${MGMT_PORT}:15672\"\n      - \"${AMQP_PORT}:5672\"\n    volumes:\n      - data:/var/lib/rabbitmq\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "USER",
+     "label": "User",
+     "defaultValue": "guest",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PASSWORD",
+     "label": "Password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "MGMT_PORT",
+     "label": "Management UI port",
+     "defaultValue": "15672",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "AMQP_PORT",
+     "label": "AMQP port",
+     "defaultValue": "5672",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The management UI is on the management port; apps connect on the AMQP port."
+   ]
+  },
+  {
+   "id": "minio",
+   "name": "MinIO",
+   "tagline": "S3-compatible object storage",
+   "category": "Databases",
+   "symbol": "externaldrive",
+   "version": 1,
+   "compose": "services:\n  minio:\n    image: minio/minio:latest\n    command: server /data --console-address \":9001\"\n    environment:\n      MINIO_ROOT_USER: ${ROOT_USER}\n      MINIO_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${API_PORT}:9000\"\n      - \"${CONSOLE_PORT}:9001\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "ROOT_USER",
+     "label": "Root user",
+     "defaultValue": "minioadmin",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ROOT_PASSWORD",
+     "label": "Root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "API_PORT",
+     "label": "S3 API port",
+     "defaultValue": "9000",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "CONSOLE_PORT",
+     "label": "Console port",
+     "defaultValue": "9001",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The console is on the console port; S3 clients use the API port."
+   ]
+  },
+  {
+   "id": "sonarr",
+   "name": "Sonarr",
+   "tagline": "TV series management",
+   "category": "Downloads",
+   "symbol": "play.rectangle",
+   "version": 1,
+   "compose": "services:\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:8989\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8989",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "radarr",
+   "name": "Radarr",
+   "tagline": "Movie management",
+   "category": "Downloads",
+   "symbol": "play.rectangle",
+   "version": 1,
+   "compose": "services:\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:7878\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "7878",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "lidarr",
+   "name": "Lidarr",
+   "tagline": "Music management",
+   "category": "Downloads",
+   "symbol": "play.rectangle",
+   "version": 1,
+   "compose": "services:\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:8686\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8686",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "prowlarr",
+   "name": "Prowlarr",
+   "tagline": "Indexer manager for the *arr apps",
+   "category": "Downloads",
+   "symbol": "magnifyingglass",
+   "version": 1,
+   "compose": "services:\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:9696\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9696",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "bazarr",
+   "name": "Bazarr",
+   "tagline": "Subtitles for Sonarr and Radarr",
+   "category": "Downloads",
+   "symbol": "play.rectangle",
+   "version": 1,
+   "compose": "services:\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:6767\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "6767",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "jackett",
+   "name": "Jackett",
+   "tagline": "Tracker/indexer proxy",
+   "category": "Downloads",
+   "symbol": "magnifyingglass",
+   "version": 1,
+   "compose": "services:\n  jackett:\n    image: lscr.io/linuxserver/jackett:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:9117\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9117",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "qbittorrent",
+   "name": "qBittorrent",
+   "tagline": "Torrent client with a web UI",
+   "category": "Downloads",
+   "symbol": "arrow.down.circle",
+   "version": 1,
+   "compose": "services:\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:8080\"\n      - \"6881:6881\"\n      - \"6881:6881/udp\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "sabnzbd",
+   "name": "SABnzbd",
+   "tagline": "Usenet downloader",
+   "category": "Downloads",
+   "symbol": "arrow.down.circle",
+   "version": 1,
+   "compose": "services:\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:8080\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "transmission",
+   "name": "Transmission",
+   "tagline": "Torrent client",
+   "category": "Downloads",
+   "symbol": "arrow.down.circle",
+   "version": 1,
+   "compose": "services:\n  transmission:\n    image: lscr.io/linuxserver/transmission:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:9091\"\n      - \"51413:51413\"\n      - \"51413:51413/udp\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9091",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  },
+  {
+   "id": "nzbget",
+   "name": "NZBGet",
+   "tagline": "Lightweight Usenet downloader",
+   "category": "Downloads",
+   "symbol": "arrow.down.circle",
+   "version": 1,
+   "compose": "services:\n  nzbget:\n    image: lscr.io/linuxserver/nzbget:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:6789\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "6789",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; change them in the compose to match your media user. Point its download/media paths at a shared volume after first run."
+   ]
+  }
+ ]
+}
