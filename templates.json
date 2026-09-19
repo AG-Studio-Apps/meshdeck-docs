@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "categories": [
   "Web & CMS",
   "Media",
@@ -947,6 +947,343 @@
     }
    ],
    "notes": []
+  },
+  {
+   "id": "ghost",
+   "name": "Ghost",
+   "tagline": "Publishing platform for blogs and newsletters",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: ghost\n      MYSQL_USER: ghost\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    healthcheck:\n      test: [\"CMD\", \"mysqladmin\", \"ping\", \"-h\", \"localhost\", \"-p${DB_ROOT_PASSWORD}\"]\n      interval: 5s\n      retries: 20\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  ghost:\n    image: ghost:5\n    environment:\n      url: http://localhost:${PORT}\n      database__client: mysql\n      database__connection__host: db\n      database__connection__user: ghost\n      database__connection__password: ${DB_PASSWORD}\n      database__connection__database: ghost\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:2368\"\n    volumes:\n      - content:/var/lib/ghost/content\n    restart: unless-stopped\nvolumes:\n  db:\n  content:\n",
+   "variables": [
+    {
+     "key": "DB_PASSWORD",
+     "label": "Database password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "DB_ROOT_PASSWORD",
+     "label": "Database root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "2368",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Set your real URL after first run so links and images resolve correctly."
+   ]
+  },
+  {
+   "id": "wikijs",
+   "name": "Wiki.js",
+   "tagline": "Modern wiki",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_DB: wiki\n      POSTGRES_USER: wiki\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U wiki\"]\n      interval: 5s\n      retries: 20\n    volumes:\n      - db:/var/lib/postgresql/data\n    restart: unless-stopped\n  wiki:\n    image: requarks/wiki:2\n    environment:\n      DB_TYPE: postgres\n      DB_HOST: db\n      DB_PORT: \"5432\"\n      DB_USER: wiki\n      DB_PASS: ${DB_PASSWORD}\n      DB_NAME: wiki\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:3000\"\n    restart: unless-stopped\nvolumes:\n  db:\n",
+   "variables": [
+    {
+     "key": "DB_PASSWORD",
+     "label": "Database password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "3000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The first visit sets up the admin account."
+   ]
+  },
+  {
+   "id": "bookstack",
+   "name": "BookStack",
+   "tagline": "Documentation and knowledge base",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  db:\n    image: lscr.io/linuxserver/mariadb:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n      MYSQL_DATABASE: bookstack\n      MYSQL_USER: bookstack\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n    healthcheck:\n      test: [\"CMD\", \"healthcheck.sh\", \"--connect\", \"--innodb_initialized\"]\n      interval: 5s\n      retries: 25\n    volumes:\n      - db:/config\n    restart: unless-stopped\n  bookstack:\n    image: lscr.io/linuxserver/bookstack:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n      APP_URL: http://localhost:${PORT}\n      DB_HOST: db\n      DB_PORT: \"3306\"\n      DB_USER: bookstack\n      DB_PASS: ${DB_PASSWORD}\n      DB_DATABASE: bookstack\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  db:\n  config:\n",
+   "variables": [
+    {
+     "key": "DB_ROOT_PASSWORD",
+     "label": "Database root password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "DB_PASSWORD",
+     "label": "Database password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "6875",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Default login is admin@admin.com / password on first start \u2014 change it immediately."
+   ]
+  },
+  {
+   "id": "baserow",
+   "name": "Baserow",
+   "tagline": "No-code database and spreadsheets",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  baserow:\n    image: baserow/baserow:latest\n    environment:\n      BASEROW_PUBLIC_URL: http://localhost:${PORT}\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - data:/baserow/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8085",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "An all-in-one image; the first start takes a minute to initialise."
+   ]
+  },
+  {
+   "id": "nocodb",
+   "name": "NocoDB",
+   "tagline": "Turn any database into a smart spreadsheet",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  nocodb:\n    image: nocodb/nocodb:latest\n    ports:\n      - \"${PORT}:8080\"\n    volumes:\n      - data:/usr/app/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8090",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "directus",
+   "name": "Directus",
+   "tagline": "Headless CMS and data platform",
+   "category": "Web & CMS",
+   "symbol": "globe",
+   "version": 1,
+   "compose": "services:\n  directus:\n    image: directus/directus:latest\n    environment:\n      KEY: ${KEY}\n      SECRET: ${SECRET}\n      ADMIN_EMAIL: ${ADMIN_EMAIL}\n      ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n      DB_CLIENT: sqlite3\n      DB_FILENAME: /directus/database/data.db\n    ports:\n      - \"${PORT}:8055\"\n    volumes:\n      - database:/directus/database\n      - uploads:/directus/uploads\n    restart: unless-stopped\nvolumes:\n  database:\n  uploads:\n",
+   "variables": [
+    {
+     "key": "KEY",
+     "label": "App key",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "SECRET",
+     "label": "App secret",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "ADMIN_EMAIL",
+     "label": "Admin email",
+     "defaultValue": "admin@example.com",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "ADMIN_PASSWORD",
+     "label": "Admin password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false
+    },
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8055",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "adguard",
+   "name": "AdGuard Home",
+   "tagline": "Network-wide ad and tracker blocking DNS",
+   "category": "Home",
+   "symbol": "shield.lefthalf.filled",
+   "version": 1,
+   "compose": "services:\n  adguardhome:\n    image: adguard/adguardhome:latest\n    ports:\n      - \"${PORT}:3000\"\n      - \"${DNS_PORT}:53/tcp\"\n      - \"${DNS_PORT}:53/udp\"\n    volumes:\n      - work:/opt/adguardhome/work\n      - conf:/opt/adguardhome/conf\n    restart: unless-stopped\nvolumes:\n  work:\n  conf:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Setup UI port",
+     "defaultValue": "3000",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "DNS_PORT",
+     "label": "DNS port",
+     "defaultValue": "53",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Open the setup UI port to configure it, then point your devices' DNS at the host on the DNS port."
+   ]
+  },
+  {
+   "id": "mosquitto",
+   "name": "Mosquitto",
+   "tagline": "MQTT message broker",
+   "category": "Home",
+   "symbol": "dot.radiowaves.left.and.right",
+   "version": 1,
+   "compose": "services:\n  mosquitto:\n    image: eclipse-mosquitto:2\n    ports:\n      - \"${PORT}:1883\"\n    volumes:\n      - data:/mosquitto/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "MQTT port",
+     "defaultValue": "1883",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs with the default config. Add a mosquitto.conf for listeners and auth before exposing it."
+   ]
+  },
+  {
+   "id": "nodered",
+   "name": "Node-RED",
+   "tagline": "Low-code automation and flows",
+   "category": "Home",
+   "symbol": "point.3.filled.connected.trianglepath.dotted",
+   "version": 1,
+   "compose": "services:\n  nodered:\n    image: nodered/node-red:latest\n    ports:\n      - \"${PORT}:1880\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "1880",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": []
+  },
+  {
+   "id": "esphome",
+   "name": "ESPHome",
+   "tagline": "Build firmware for ESP devices",
+   "category": "Home",
+   "symbol": "cpu",
+   "version": 1,
+   "compose": "services:\n  esphome:\n    image: ghcr.io/esphome/esphome:latest\n    ports:\n      - \"${PORT}:6052\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "6052",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "The dashboard runs here; flashing a device over USB needs extra device access added to the compose."
+   ]
+  },
+  {
+   "id": "dashy",
+   "name": "Dashy",
+   "tagline": "A friendly homelab dashboard",
+   "category": "Home",
+   "symbol": "square.grid.2x2",
+   "version": 1,
+   "compose": "services:\n  dashy:\n    image: lissy93/dashy:latest\n    ports:\n      - \"${PORT}:8080\"\n    restart: unless-stopped\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "4000",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Edit the config through the UI to add your services."
+   ]
+  },
+  {
+   "id": "heimdall",
+   "name": "Heimdall",
+   "tagline": "Application dashboard / start page",
+   "category": "Home",
+   "symbol": "square.grid.2x2",
+   "version": 1,
+   "compose": "services:\n  heimdall:\n    image: lscr.io/linuxserver/heimdall:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "8095",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "grocy",
+   "name": "Grocy",
+   "tagline": "Groceries and household management",
+   "category": "Home",
+   "symbol": "cart",
+   "version": 1,
+   "compose": "services:\n  grocy:\n    image: lscr.io/linuxserver/grocy:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  config:\n",
+   "variables": [
+    {
+     "key": "PORT",
+     "label": "Web UI port",
+     "defaultValue": "9283",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
   }
  ]
 }

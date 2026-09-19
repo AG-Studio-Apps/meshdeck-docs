@@ -29,15 +29,18 @@ def test(t):
         up = run(base + ["up", "-d"], env, 240)
         if up.returncode != 0:
             return False, (up.stderr.strip().splitlines() or [""])[-1][:200]
-        time.sleep(18)
-        ps = run(base + ["ps", "--format", "json"], env, 30)
-        states = [json.loads(l) for l in ps.stdout.strip().splitlines() if l.strip()]
+        # Poll up to 60s: a multi-service app waits on its DB's healthcheck.
+        states, bad = [], []
+        for _ in range(12):
+            time.sleep(5)
+            ps = run(base + ["ps", "--format", "json"], env, 30)
+            states = [json.loads(l) for l in ps.stdout.strip().splitlines() if l.strip()]
+            bad = [s for s in states if s.get("State") != "running" or "Restarting" in (s.get("Status") or "")]
+            if states and not bad:
+                return True, ", ".join(s.get("Service") for s in states)
         if not states:
             return False, "no containers started"
-        bad = [s for s in states if s.get("State") != "running" or "Restarting" in (s.get("Status") or "")]
-        if bad:
-            return False, ", ".join(f"{s.get('Service')}={s.get('State')}" for s in bad)
-        return True, ", ".join(s.get("Service") for s in states)
+        return False, ", ".join(f"{s.get('Service')}={s.get('State')}" for s in bad)
     except subprocess.TimeoutExpired:
         return False, "timed out"
     finally:
