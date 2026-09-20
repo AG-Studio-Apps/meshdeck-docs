@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "categories": [
     "Web & CMS",
     "Media",
@@ -1863,6 +1863,335 @@
         "Models are large: a 7B model is about 4–5 GB, and they share the host's main disk, so pulling several can fill it. Remove models you don't use (in Open WebUI, or 'ollama rm').",
         "It runs on CPU by default, so it works on any host (just slower). A 7B model wants roughly 8 GB of free RAM. For an NVIDIA GPU, add a device reservation and the NVIDIA container toolkit.",
         "First launch downloads a small embedding model for search — give it a minute on first boot."
+      ]
+    },
+    {
+      "id": "home-ops",
+      "name": "Home Ops",
+      "category": "Monitoring",
+      "symbol": "waveform.path.ecg",
+      "tagline": "Uptime Kuma + Dozzle + Beszel — a lightweight monitoring toolkit for a home server.",
+      "version": 1,
+      "compose": "services:\n  uptime-kuma:\n    image: louislam/uptime-kuma:2.5.5\n    volumes:\n      - uptime-kuma:/app/data\n    ports: ['${UPTIME_PORT:-3001}:3001']\n    restart: unless-stopped\n    networks: [homeops]\n  dozzle:\n    image: amir20/dozzle:v11.1.1\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock:ro\n    ports: ['127.0.0.1:${DOZZLE_PORT:-8081}:8080']\n    restart: unless-stopped\n    networks: [homeops]\n  beszel:\n    image: henrygd/beszel:0.20.0\n    volumes:\n      - beszel:/beszel_data\n    ports: ['${BESZEL_PORT:-8090}:8090']\n    restart: unless-stopped\n    networks: [homeops]\nnetworks: { homeops: {} }\nvolumes: { uptime-kuma: {}, beszel: {} }\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "UPTIME_PORT",
+          "label": "Uptime Kuma port",
+          "defaultValue": "3001",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Uptime monitoring & status pages, published on the host."
+        },
+        {
+          "key": "BESZEL_PORT",
+          "label": "Beszel port",
+          "defaultValue": "8090",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Beszel metrics hub, published on the host."
+        },
+        {
+          "key": "DOZZLE_PORT",
+          "label": "Dozzle port",
+          "defaultValue": "8081",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Dozzle log viewer, bound to localhost — reached in-app."
+        }
+      ],
+      "notes": [
+        "A toolkit of three independent tools deployed together (they don't wire into each other): Uptime Kuma (uptime + status pages), Dozzle (live container logs), Beszel (host/container metrics).",
+        "Uptime Kuma and Beszel are published on every interface and each makes the first person who signs up the admin — create your account immediately after deploy.",
+        "Dozzle reads the Docker socket (read-only): it can see every container's logs and environment, including secrets. It's bound to localhost and reached in-app, not on your LAN.",
+        "Beszel starts with an empty dashboard. To see metrics, open Beszel → Add System, copy the key/command it shows, then run the Beszel agent (image henrygd/beszel-agent, port 45876) on the host to monitor with that KEY — it then appears in the hub."
+      ]
+    },
+    {
+      "id": "authentik",
+      "name": "Authentik (SSO)",
+      "category": "Security",
+      "symbol": "person.badge.key",
+      "tagline": "A self-hosted single sign-on identity provider — OAuth2/OIDC, SAML and proxy auth for your apps.",
+      "version": 1,
+      "compose": "services:\n  postgresql:\n    image: docker.io/library/postgres:16-alpine\n    environment:\n      POSTGRES_DB: authentik\n      POSTGRES_USER: authentik\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    volumes:\n      - database:/var/lib/postgresql/data\n    healthcheck:\n      test: ['CMD-SHELL', 'pg_isready -d authentik -U authentik']\n      interval: 30s\n      timeout: 5s\n      retries: 5\n      start_period: 20s\n    restart: unless-stopped\n    networks: [authentik]\n  server:\n    image: ghcr.io/goauthentik/server:2026.8.3\n    command: server\n    environment:\n      AUTHENTIK_POSTGRESQL__HOST: postgresql\n      AUTHENTIK_POSTGRESQL__NAME: authentik\n      AUTHENTIK_POSTGRESQL__USER: authentik\n      AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}\n      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}\n      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}\n      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@example.com}\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n      - templates:/templates\n    ports: ['${AUTHENTIK_PORT:-9000}:9000']\n    depends_on:\n      postgresql: { condition: service_healthy }\n    shm_size: 512mb\n    restart: unless-stopped\n    networks: [authentik]\n  worker:\n    image: ghcr.io/goauthentik/server:2026.8.3\n    command: worker\n    environment:\n      AUTHENTIK_POSTGRESQL__HOST: postgresql\n      AUTHENTIK_POSTGRESQL__NAME: authentik\n      AUTHENTIK_POSTGRESQL__USER: authentik\n      AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}\n      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}\n      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}\n      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@example.com}\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n      - templates:/templates\n      - certs:/certs\n    depends_on:\n      postgresql: { condition: service_healthy }\n    shm_size: 512mb\n    restart: unless-stopped\n    networks: [authentik]\nnetworks: { authentik: {} }\nvolumes: { database: {}, data: {}, templates: {}, certs: {} }\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "AUTHENTIK_PORT",
+          "label": "Authentik port",
+          "defaultValue": "9000",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The Authentik web UI / identity endpoint, published on the host."
+        },
+        {
+          "key": "AUTHENTIK_BOOTSTRAP_EMAIL",
+          "label": "Admin email",
+          "defaultValue": "admin@example.com",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Email for the initial admin (akadmin) account."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "AUTHENTIK_ADMIN_USERNAME",
+          "label": "Admin user",
+          "defaultValue": "akadmin",
+          "isSecret": false,
+          "isPreset": true,
+          "credential": {
+            "field": "username",
+            "group": "authentik",
+            "tier": "applied",
+            "display": "Authentik admin"
+          }
+        },
+        {
+          "key": "AUTHENTIK_BOOTSTRAP_PASSWORD",
+          "label": "Admin password",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "help": "The initial akadmin password — generated into your vault, revealed in-app.",
+          "credential": {
+            "field": "password",
+            "group": "authentik",
+            "tier": "applied",
+            "display": "Authentik admin"
+          }
+        },
+        {
+          "key": "DB_PASSWORD",
+          "label": "Database password",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "help": "Internal database password, generated into your vault.",
+          "generate": {
+            "charset": "alphanumeric"
+          }
+        },
+        {
+          "key": "AUTHENTIK_SECRET_KEY",
+          "label": "Secret key",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "help": "Internal signing key, generated into your vault.",
+          "generate": {
+            "charset": "alphanumeric"
+          }
+        }
+      ],
+      "notes": [
+        "This is your identity provider — the initial admin (akadmin) password is generated into your vault and shown in-app; there is no open sign-up window to race.",
+        "Authentik is published on every interface. It's an IdP other apps redirect to: set your domain in Authentik and put TLS in front of it (a reverse proxy or your tailnet HTTPS endpoint) before wiring real SSO clients — the plain :9000 endpoint is for setup and in-app admin.",
+        "The database password and secret key are generated into your vault and reused on every redeploy — don't change them, or logins break.",
+        "Proxy/LDAP outposts that Authentik deploys as containers need the worker's Docker socket added back (removed here for least privilege); without it, deploy outposts manually."
+      ]
+    },
+    {
+      "id": "syncthing",
+      "name": "Syncthing",
+      "category": "Tools",
+      "symbol": "arrow.triangle.2.circlepath",
+      "tagline": "Continuous file synchronisation between your devices, peer-to-peer and encrypted.",
+      "version": 1,
+      "compose": "services:\n  syncthing:\n    image: syncthing/syncthing:2.1.5\n    hostname: ${SYNCTHING_NAME:-meshdeck-syncthing}\n    environment:\n      PUID: ${PUID:-1000}\n      PGID: ${PGID:-1000}\n    volumes:\n      - config:/var/syncthing\n    ports:\n      - '127.0.0.1:${SYNCTHING_PORT:-8384}:8384'\n      - '${SYNC_PORT:-22000}:22000/tcp'\n      - '${SYNC_PORT:-22000}:22000/udp'\n      - '21027:21027/udp'\n    restart: unless-stopped\nvolumes: { config: {} }\n",
+      "variables": [
+        {
+          "key": "SYNCTHING_PORT",
+          "label": "Web UI port",
+          "defaultValue": "8384",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The web UI, bound to localhost — reached in-app."
+        },
+        {
+          "key": "SYNC_PORT",
+          "label": "Sync port",
+          "defaultValue": "22000",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The sync protocol port (TCP+UDP), published so peers can connect."
+        },
+        {
+          "key": "SYNCTHING_NAME",
+          "label": "Device name",
+          "defaultValue": "meshdeck-syncthing",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "PUID",
+          "label": "User ID",
+          "defaultValue": "1000",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "PGID",
+          "label": "Group ID",
+          "defaultValue": "1000",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "The web UI has no password by default — set a GUI user and password in Settings. It's bound to localhost and reached in-app.",
+        "The sync port is published so other devices can pair with yours; peers still need your device ID, so it isn't open access."
+      ]
+    },
+    {
+      "id": "ntfy",
+      "name": "ntfy",
+      "category": "Tools",
+      "symbol": "bell.badge",
+      "tagline": "Send push notifications to your phone and desktop over simple HTTP.",
+      "version": 1,
+      "compose": "services:\n  ntfy:\n    image: binwiederhier/ntfy:v2.28.0\n    command: serve\n    environment:\n      NTFY_BASE_URL: ${NTFY_BASE_URL:-http://localhost}\n      NTFY_CACHE_FILE: /var/cache/ntfy/cache.db\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - cache:/var/cache/ntfy\n      - config:/etc/ntfy\n    ports: ['${NTFY_PORT:-8082}:80']\n    restart: unless-stopped\nvolumes: { cache: {}, config: {} }\n",
+      "variables": [
+        {
+          "key": "NTFY_PORT",
+          "label": "Port",
+          "defaultValue": "8082",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "NTFY_BASE_URL",
+          "label": "Base URL",
+          "defaultValue": "http://localhost",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Set to the URL your devices reach this server at (e.g. your tailnet name) — links and attachments break otherwise."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "ntfy is OPEN by default — anyone who can reach it can publish and subscribe to any topic. Before relying on it, set access control (NTFY_AUTH_DEFAULT_ACCESS=deny-all and add users) and set the Base URL to the address your devices use."
+      ]
+    },
+    {
+      "id": "filebrowser",
+      "name": "File Browser",
+      "category": "Tools",
+      "symbol": "folder",
+      "tagline": "A web-based file manager for a folder on your host.",
+      "version": 1,
+      "compose": "services:\n  filebrowser:\n    image: filebrowser/filebrowser:v2.63.23\n    environment:\n      FB_DATABASE: /database/filebrowser.db\n      FB_ROOT: /srv\n    volumes:\n      - ${FILES_PATH:-/srv}:/srv\n      - database:/database\n    ports: ['127.0.0.1:${FILEBROWSER_PORT:-8083}:80']\n    restart: unless-stopped\nvolumes: { database: {} }\n",
+      "variables": [
+        {
+          "key": "FILEBROWSER_PORT",
+          "label": "Port",
+          "defaultValue": "8083",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Bound to localhost (default login is admin) — reached in-app."
+        },
+        {
+          "key": "FILES_PATH",
+          "label": "Folder to serve",
+          "defaultValue": "/srv",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "A host folder the container (UID 1000) can read/write — not the default /srv if it's root-owned."
+        }
+      ],
+      "notes": [
+        "The default login is an admin account whose password is set on first run (check the container logs, or admin/admin) — it's bound to localhost and reached in-app; change the password before exposing it.",
+        "Serve a folder the container user (UID 1000) can access; a root-owned folder will list but not write."
+      ]
+    },
+    {
+      "id": "homebox",
+      "name": "Homebox",
+      "category": "Home",
+      "symbol": "shippingbox",
+      "tagline": "Track your household inventory — what you own, where it is, and its details.",
+      "version": 1,
+      "compose": "services:\n  homebox:\n    image: ghcr.io/sysadminsmedia/homebox:0.20.1\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n    ports: ['${HOMEBOX_PORT:-7745}:7745']\n    restart: unless-stopped\nvolumes: { data: {} }\n",
+      "variables": [
+        {
+          "key": "HOMEBOX_PORT",
+          "label": "Port",
+          "defaultValue": "7745",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "Create your account immediately after deploy (the first sign-up is the admin). To stop others registering, set HBOX_OPTIONS_ALLOW_REGISTRATION=false and redeploy."
+      ]
+    },
+    {
+      "id": "memos",
+      "name": "Memos",
+      "category": "Tools",
+      "symbol": "note.text",
+      "tagline": "A lightweight, self-hosted notes and micro-blogging service.",
+      "version": 1,
+      "compose": "services:\n  memos:\n    image: neosmemo/memos:0.31.0\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/var/opt/memos\n    ports: ['${MEMOS_PORT:-5230}:5230']\n    restart: unless-stopped\nvolumes: { data: {} }\n",
+      "variables": [
+        {
+          "key": "MEMOS_PORT",
+          "label": "Port",
+          "defaultValue": "5230",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "Create your account immediately after deploy — the first sign-up becomes the admin."
+      ]
+    },
+    {
+      "id": "glance",
+      "name": "Glance",
+      "category": "Tools",
+      "symbol": "square.grid.2x2",
+      "tagline": "A fast, self-hosted dashboard for your feeds, widgets and services.",
+      "version": 1,
+      "compose": "configs:\n  glance_yml:\n    content: |\n      pages:\n        - name: Home\n          columns:\n            - size: small\n              widgets:\n                - type: clock\n                  hour-format: 24h\n            - size: full\n              widgets:\n                - type: weather\n                  location: London, United Kingdom\n                  units: metric\nservices:\n  glance:\n    image: glanceapp/glance:v0.8.6\n    configs:\n      - source: glance_yml\n        target: /app/config/glance.yml\n    ports: ['127.0.0.1:${GLANCE_PORT:-8084}:8080']\n    restart: unless-stopped\n",
+      "variables": [
+        {
+          "key": "GLANCE_PORT",
+          "label": "Port",
+          "defaultValue": "8084",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Bound to localhost (no auth) — reached in-app."
+        }
+      ],
+      "notes": [
+        "Glance has no authentication and is bound to localhost, reached in-app. Its config is built in; edit the stack's compose (in meshDeck) to add your own widgets. Keep it on localhost if you add widgets that surface internal data."
       ]
     }
   ],

@@ -81,7 +81,7 @@ def test(t):
 # images + a first-boot DB migration; localai: ~5 GB of images + a first-boot model download).
 # These are config-validated, not deployed; the owner verifies them live. Every other super stack
 # (e.g. observability, smart-home) deploys fully.
-VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich", "localai"}
+VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich", "localai", "authentik"}
 
 def main():
     cat = json.load(open(CATALOG))
