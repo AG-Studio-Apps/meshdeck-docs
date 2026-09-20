@@ -1,5 +1,5 @@
 {
- "version": 4,
+ "version": 5,
  "categories": [
   "Web & CMS",
   "Media",
@@ -188,14 +188,26 @@
      "label": "Admin user",
      "defaultValue": "admin",
      "isSecret": false,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "username",
+      "group": "influxdb",
+      "tier": "applied",
+      "display": "InfluxDB admin"
+     }
     },
     {
      "key": "ADMIN_PASSWORD",
      "label": "Admin password",
      "defaultValue": "",
      "isSecret": true,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "password",
+      "group": "influxdb",
+      "tier": "applied",
+      "display": "InfluxDB admin"
+     }
     },
     {
      "key": "ORG",
@@ -258,14 +270,26 @@
      "label": "Login email",
      "defaultValue": "admin@example.com",
      "isSecret": false,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "username",
+      "group": "pgadmin",
+      "tier": "applied",
+      "display": "pgAdmin"
+     }
     },
     {
      "key": "PASSWORD",
      "label": "Login password",
      "defaultValue": "",
      "isSecret": true,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "password",
+      "group": "pgadmin",
+      "tier": "applied",
+      "display": "pgAdmin"
+     }
     },
     {
      "key": "PORT",
@@ -291,14 +315,26 @@
      "label": "User",
      "defaultValue": "guest",
      "isSecret": false,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "username",
+      "group": "rabbitmq",
+      "tier": "applied",
+      "display": "RabbitMQ"
+     }
     },
     {
      "key": "PASSWORD",
      "label": "Password",
      "defaultValue": "",
      "isSecret": true,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "password",
+      "group": "rabbitmq",
+      "tier": "applied",
+      "display": "RabbitMQ"
+     }
     },
     {
      "key": "MGMT_PORT",
@@ -333,14 +369,26 @@
      "label": "Root user",
      "defaultValue": "minioadmin",
      "isSecret": false,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "username",
+      "group": "minio",
+      "tier": "applied",
+      "display": "MinIO console"
+     }
     },
     {
      "key": "ROOT_PASSWORD",
      "label": "Root password",
      "defaultValue": "",
      "isSecret": true,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "password",
+      "group": "minio",
+      "tier": "applied",
+      "display": "MinIO console"
+     }
     },
     {
      "key": "API_PORT",
@@ -1114,14 +1162,26 @@
      "label": "Admin email",
      "defaultValue": "admin@example.com",
      "isSecret": false,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "username",
+      "group": "directus",
+      "tier": "applied",
+      "display": "Directus admin"
+     }
     },
     {
      "key": "ADMIN_PASSWORD",
      "label": "Admin password",
      "defaultValue": "",
      "isSecret": true,
-     "isPreset": false
+     "isPreset": false,
+     "credential": {
+      "field": "password",
+      "group": "directus",
+      "tier": "applied",
+      "display": "Directus admin"
+     }
     },
     {
      "key": "PORT",
