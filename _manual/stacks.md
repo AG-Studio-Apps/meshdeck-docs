@@ -46,15 +46,12 @@ Choose **+ → New stack…** (or **Deploy → New stack…** on iPad).
 
 ## Templates
 
-**+ → Templates…** opens the gallery. It has ten built-in templates, curated and versioned in the app; a deployed stack keeps the version it was made from.
+**+ → Templates…** opens the gallery. It ships with a curated, versioned set — WordPress, Nextcloud, Jellyfin, Grafana, Pi-hole, Gitea, Vaultwarden and more, grouped by category — and pulls the latest from meshDeck (refresh from the gallery's toolbar). A deployed stack keeps the version it was made from.
 
-| Category | Templates |
-|---|---|
-| Web & CMS | WordPress, Nextcloud |
-| Media | Jellyfin |
-| Monitoring | Uptime Kuma, Grafana + Prometheus |
-| Tools | Gitea, Vaultwarden, n8n |
-| Home | Pi-hole, Home Assistant |
+The gallery has two tabs:
+
+- **Stacks** — single-app templates, grouped by category, with a **Featured** row at the top.
+- **Super Stacks** — curated multi-app projects, like a media suite or a monitoring stack. See [Super stacks]({{ '/manual/super-stacks/' | relative_url }}).
 
 On a Portainer host the gallery also shows that server's **App Templates** and **Custom templates**. Compose and Git templates deploy as stacks, container templates open **New container** pre-filled, and Swarm templates are greyed out because they are not supported.
 

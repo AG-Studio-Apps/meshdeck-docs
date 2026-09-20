@@ -14,6 +14,7 @@
 - group: Deploy
   pages:
     - { id: stacks,          title: Stacks and templates }
+    - { id: super-stacks,    title: Super stacks }
     - { id: builder,         title: The canvas builder }
     - { id: systems,         title: Systems }
     - { id: vault,           title: The vault }

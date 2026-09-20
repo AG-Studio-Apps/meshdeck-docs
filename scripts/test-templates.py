@@ -76,6 +76,11 @@ def test(t):
         run(base + ["down", "-v", "--remove-orphans"], env, 120)
         os.unlink(path)
 
+# Super stacks that cannot fully come up in CI: a real VPN credential (killswitch) or host
+# hardware (a USB coordinator) gates startup. These are config-validated, not deployed; the
+# owner verifies them live. Every other super stack (e.g. observability) deploys fully.
+VALIDATE_ONLY = {"media-stack"}
+
 def main():
     cat = json.load(open(CATALOG))
     failures = []
@@ -85,8 +90,7 @@ def main():
             print(f"FAIL  {t['id']:16} default port collision: {clashes}", flush=True)
             failures.append(t["id"])
             continue
-        # A super stack is credential-gated and heavy — validate its compose, don't deploy.
-        ok, detail = validate(t) if t.get("category") == "Super stacks" else test(t)
+        ok, detail = validate(t) if t["id"] in VALIDATE_ONLY else test(t)
         print(f"{'OK  ' if ok else 'FAIL'}  {t['id']:16} {detail}", flush=True)
         if not ok:
             failures.append(t["id"])
