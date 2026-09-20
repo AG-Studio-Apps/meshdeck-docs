@@ -76,10 +76,11 @@ def test(t):
         run(base + ["down", "-v", "--remove-orphans"], env, 120)
         os.unlink(path)
 
-# Super stacks that cannot fully come up in CI: a real VPN credential (killswitch) or host
-# hardware (a USB coordinator) gates startup. These are config-validated, not deployed; the
-# owner verifies them live. Every other super stack (e.g. observability) deploys fully.
-VALIDATE_ONLY = {"media-stack", "media-stack-wg"}
+# Super stacks that can't fully deploy in CI: a real VPN credential (killswitch) gates startup
+# (media-stack, media-stack-wg), or the stack is too heavy for a shared runner (immich: ~3 GB of
+# images + a first-boot DB migration). These are config-validated, not deployed; the owner verifies
+# them live. Every other super stack (e.g. observability, smart-home) deploys fully.
+VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich"}
 
 def main():
     cat = json.load(open(CATALOG))

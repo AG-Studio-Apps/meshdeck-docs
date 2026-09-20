@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "categories": [
     "Web & CMS",
     "Media",
@@ -1768,11 +1768,65 @@
         "After it's up: in each *arr app add the download client qBittorrent at host 'gluetun' port 8080 and SABnzbd at 'sabnzbd:8080'; add Prowlarr as the indexer; point Jellyseerr at Jellyfin.",
         "qBittorrent 4.6+ may reject the *arr connection until you turn off 'Enable Host header validation' in its Web UI (Options → Web UI)."
       ]
+    },
+    {
+      "id": "immich",
+      "name": "Personal Cloud (Immich)",
+      "tagline": "Immich photo & video library with its ML, database and cache — your own Google Photos.",
+      "category": "Home",
+      "symbol": "photo.stack",
+      "version": 1,
+      "compose": "services:\n  immich-server:\n    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-v3.2.2}\n    environment:\n      DB_HOSTNAME: database\n      DB_USERNAME: postgres\n      DB_PASSWORD: ${DB_PASSWORD}\n      DB_DATABASE_NAME: immich\n      REDIS_HOSTNAME: redis\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ${UPLOAD_LOCATION}:/data\n      - /etc/localtime:/etc/localtime:ro\n    ports: ['${IMMICH_PORT:-2283}:2283']\n    depends_on:\n      redis: { condition: service_healthy }\n      database: { condition: service_healthy }\n    restart: unless-stopped\n  immich-machine-learning:\n    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-v3.2.2}\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - model-cache:/cache\n    restart: unless-stopped\n  redis:\n    image: docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf\n    healthcheck:\n      test: redis-cli ping | grep -q PONG || exit 1\n    restart: unless-stopped\n  database:\n    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23\n    environment:\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n      POSTGRES_USER: postgres\n      POSTGRES_DB: immich\n      POSTGRES_INITDB_ARGS: '--data-checksums'\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    shm_size: 128mb\n    healthcheck:\n      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']\n      interval: 10s\n      timeout: 5s\n      retries: 12\n      start_period: 30s\n    restart: unless-stopped\nvolumes:\n  model-cache: {}\n  pgdata: {}\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "UPLOAD_LOCATION",
+          "label": "Library folder",
+          "defaultValue": "/srv/immich",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "A dedicated host folder for your photos and videos. Immich creates root-owned subfolders here."
+        },
+        {
+          "key": "IMMICH_PORT",
+          "label": "Immich port",
+          "defaultValue": "2283",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The Immich web UI, published on the host."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "DB_PASSWORD",
+          "label": "Database password",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "help": "Generated and kept in your vault; internal to Immich (its admin login is set in the web UI on first run). Leave blank to auto-generate.",
+          "generate": {
+            "charset": "alphanumeric"
+          }
+        }
+      ],
+      "notes": [
+        "The Immich web UI is published on its port on every interface, and the first person to open it claims the admin account — complete setup promptly.",
+        "Immich runs as root, so the library folder gets root-owned subfolders. Use a dedicated folder (not an existing one); managing or backing it up may need sudo.",
+        "The database password is generated and kept in your vault. Don't change it on a redeploy — the existing database keeps the original password while its volume persists.",
+        "Photos live in your library folder; the database lives in a Docker named volume. Back the database up with Immich's built-in backups or pg_dump, not a file copy.",
+        "Machine learning (smart search, face recognition) pulls a ~1 GB image and downloads models on first use. It's optional to the core library; leave it running for search."
+      ]
     }
   ],
   "featured": [
     "media-stack",
     "observability",
+    "immich",
     "smart-home",
     "nextcloud",
     "pihole"
