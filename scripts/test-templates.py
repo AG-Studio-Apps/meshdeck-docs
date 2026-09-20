@@ -79,7 +79,7 @@ def test(t):
 # Super stacks that cannot fully come up in CI: a real VPN credential (killswitch) or host
 # hardware (a USB coordinator) gates startup. These are config-validated, not deployed; the
 # owner verifies them live. Every other super stack (e.g. observability) deploys fully.
-VALIDATE_ONLY = {"media-stack"}
+VALIDATE_ONLY = {"media-stack", "media-stack-wg"}
 
 def main():
     cat = json.load(open(CATALOG))

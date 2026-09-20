@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "categories": [
     "Web & CMS",
     "Media",
@@ -1574,11 +1574,206 @@
         "Grafana opens with the Prometheus datasource already wired. Import a dashboard to start graphing — e.g. Grafana.com ID 1860 (node-exporter) and 14282 (cAdvisor).",
         "Ports: Grafana ${GRAFANA_PORT}; Prometheus ${PROM_PORT} and Alertmanager ${ALERT_PORT} on localhost only."
       ]
+    },
+    {
+      "id": "smart-home",
+      "name": "Smart Home",
+      "tagline": "Home Assistant, Mosquitto (MQTT) and Node-RED — a smart-home core wired to run together.",
+      "category": "Home",
+      "symbol": "house",
+      "version": 1,
+      "compose": "configs:\n  mosquitto_conf:\n    content: |\n      listener 1883\n      allow_anonymous true\n      persistence true\n      persistence_location /mosquitto/data/\nservices:\n  homeassistant:\n    image: ghcr.io/home-assistant/home-assistant:${HA_VERSION:-2026.9}\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ha_config:/config\n      - /etc/localtime:/etc/localtime:ro\n    ports: ['${HA_PORT:-8123}:8123']\n    restart: unless-stopped\n    networks: [smarthome]\n  mosquitto:\n    image: eclipse-mosquitto:2.0\n    configs:\n      - source: mosquitto_conf\n        target: /mosquitto/config/mosquitto.conf\n    volumes:\n      - mosquitto_data:/mosquitto/data\n    ports: ['127.0.0.1:${MQTT_PORT:-1883}:1883']\n    restart: unless-stopped\n    networks: [smarthome]\n  nodered:\n    image: nodered/node-red:4.0\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - nodered_data:/data\n    ports: ['127.0.0.1:${NODERED_PORT:-1880}:1880']\n    depends_on: [mosquitto]\n    restart: unless-stopped\n    networks: [smarthome]\nnetworks: { smarthome: {} }\nvolumes: { ha_config: {}, mosquitto_data: {}, nodered_data: {} }\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "HA_PORT",
+          "label": "Home Assistant port",
+          "defaultValue": "8123",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The Home Assistant web UI, published on the host."
+        },
+        {
+          "key": "MQTT_PORT",
+          "label": "MQTT port",
+          "defaultValue": "1883",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Mosquitto broker, bound to localhost — reached in-app, not on the LAN."
+        },
+        {
+          "key": "NODERED_PORT",
+          "label": "Node-RED port",
+          "defaultValue": "1880",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Node-RED editor, bound to localhost (it has no password) — reached in-app."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "Home Assistant is published on its port on every interface, and the first person to open it claims the admin account — finish onboarding promptly.",
+        "Mosquitto (the MQTT broker) and Node-RED's flow editor are bound to localhost and reached in-app through meshDeck. Node-RED has no password by default, so don't put it on the LAN; the broker allows anonymous clients.",
+        "In Home Assistant, add the MQTT integration pointing at host 'mosquitto', port 1883, with no username or password.",
+        "On a bridge network Home Assistant can't auto-discover LAN devices (mDNS/SSDP) — add integrations manually by IP.",
+        "For Node-RED to control Home Assistant, install the Home Assistant WebSocket palette and use a long-lived access token from your HA profile.",
+        "Adding Zigbee or Z-Wave needs a USB radio plugged into the host (Zigbee2MQTT) — a per-host add-on, not included here."
+      ]
+    },
+    {
+      "id": "media-stack-wg",
+      "name": "Media (WireGuard VPN)",
+      "tagline": "The media suite with a WireGuard VPN killswitch — for Mullvad and other WireGuard providers.",
+      "category": "Media",
+      "symbol": "play.rectangle.on.rectangle",
+      "version": 1,
+      "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: wireguard\n      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY}\n      WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "VPN_PROVIDER",
+          "label": "VPN provider",
+          "defaultValue": "mullvad",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "A provider gluetun supports over WireGuard: mullvad, nordvpn, surfshark, windscribe, protonvpn, ivpn, airvpn."
+        },
+        {
+          "key": "WIREGUARD_PRIVATE_KEY",
+          "label": "WireGuard private key",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "help": "Your WireGuard private key from the provider's config/dashboard."
+        },
+        {
+          "key": "WIREGUARD_ADDRESSES",
+          "label": "WireGuard address",
+          "defaultValue": "",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The tunnel address from your provider's config, e.g. 10.64.0.2/32."
+        },
+        {
+          "key": "VPN_COUNTRIES",
+          "label": "Server country",
+          "defaultValue": "Netherlands",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Server country, or a comma-separated list."
+        },
+        {
+          "key": "DATA_PATH",
+          "label": "Data directory",
+          "defaultValue": "/srv/media",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "One host folder for downloads AND media so imports hardlink instead of copy. The apps see it at /data."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "PUID",
+          "label": "User ID",
+          "defaultValue": "1000",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "PGID",
+          "label": "Group ID",
+          "defaultValue": "1000",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "QBIT_PORT",
+          "label": "qBittorrent port",
+          "defaultValue": "8080",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "SABNZBD_PORT",
+          "label": "SABnzbd port",
+          "defaultValue": "8081",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "PROWLARR_PORT",
+          "label": "Prowlarr port",
+          "defaultValue": "9696",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "SONARR_PORT",
+          "label": "Sonarr port",
+          "defaultValue": "8989",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "RADARR_PORT",
+          "label": "Radarr port",
+          "defaultValue": "7878",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "LIDARR_PORT",
+          "label": "Lidarr port",
+          "defaultValue": "8686",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "BAZARR_PORT",
+          "label": "Bazarr port",
+          "defaultValue": "6767",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "JELLYFIN_PORT",
+          "label": "Jellyfin port",
+          "defaultValue": "8096",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "JELLYSEERR_PORT",
+          "label": "Jellyseerr port",
+          "defaultValue": "5055",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "qBittorrent has network ONLY through the VPN (killswitch) — it stays down until Gluetun connects, so it waits for a healthy VPN.",
+        "The provider must support WireGuard in gluetun: Mullvad, NordVPN, Surfshark, Windscribe, ProtonVPN, IVPN, AirVPN. Get your WireGuard private key and address from the provider's config.",
+        "DATA_PATH is one folder holding downloads and media (e.g. /srv/media) so Sonarr/Radarr hardlink imports instead of copying.",
+        "After it's up: in each *arr app add the download client qBittorrent at host 'gluetun' port 8080 and SABnzbd at 'sabnzbd:8080'; add Prowlarr as the indexer; point Jellyseerr at Jellyfin.",
+        "qBittorrent 4.6+ may reject the *arr connection until you turn off 'Enable Host header validation' in its Web UI (Options → Web UI)."
+      ]
     }
   ],
   "featured": [
     "media-stack",
     "observability",
+    "smart-home",
     "nextcloud",
     "pihole"
   ]
