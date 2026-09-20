@@ -78,9 +78,10 @@ def test(t):
 
 # Super stacks that can't fully deploy in CI: a real VPN credential (killswitch) gates startup
 # (media-stack, media-stack-wg), or the stack is too heavy for a shared runner (immich: ~3 GB of
-# images + a first-boot DB migration). These are config-validated, not deployed; the owner verifies
-# them live. Every other super stack (e.g. observability, smart-home) deploys fully.
-VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich"}
+# images + a first-boot DB migration; localai: ~5 GB of images + a first-boot model download).
+# These are config-validated, not deployed; the owner verifies them live. Every other super stack
+# (e.g. observability, smart-home) deploys fully.
+VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich", "localai"}
 
 def main():
     cat = json.load(open(CATALOG))

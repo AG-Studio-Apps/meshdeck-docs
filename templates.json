@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "categories": [
     "Web & CMS",
     "Media",
@@ -1821,14 +1821,57 @@
         "Photos live in your library folder; the database lives in a Docker named volume. Back the database up with Immich's built-in backups or pg_dump, not a file copy.",
         "Machine learning (smart search, face recognition) pulls a ~1 GB image and downloads models on first use. It's optional to the core library; leave it running for search."
       ]
+    },
+    {
+      "id": "localai",
+      "name": "Local AI",
+      "tagline": "Ollama + Open WebUI — run open LLMs locally with a private ChatGPT-style interface.",
+      "category": "AI",
+      "symbol": "brain",
+      "version": 1,
+      "compose": "services:\n  ollama:\n    image: ollama/ollama:0.34.2\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ollama:/root/.ollama\n    ports: ['127.0.0.1:${OLLAMA_PORT:-11434}:11434']\n    healthcheck:\n      test: ['CMD-SHELL', 'ollama list >/dev/null 2>&1 || exit 1']\n      interval: 30s\n      timeout: 5s\n      retries: 5\n      start_period: 20s\n    restart: unless-stopped\n    networks: [localai]\n  open-webui:\n    image: ghcr.io/open-webui/open-webui:v0.11.3\n    environment:\n      OLLAMA_BASE_URL: http://ollama:11434\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - open-webui:/app/backend/data\n    ports: ['${WEBUI_PORT:-3000}:8080']\n    depends_on: [ollama]\n    restart: unless-stopped\n    networks: [localai]\nnetworks: { localai: {} }\nvolumes: { ollama: {}, open-webui: {} }\n",
+      "superStack": true,
+      "variables": [
+        {
+          "key": "WEBUI_PORT",
+          "label": "Open WebUI port",
+          "defaultValue": "3000",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The chat interface, published on the host."
+        },
+        {
+          "key": "OLLAMA_PORT",
+          "label": "Ollama API port",
+          "defaultValue": "11434",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "The Ollama API, bound to localhost — reached in-app, never on the LAN."
+        },
+        {
+          "key": "TZ",
+          "label": "Time zone",
+          "defaultValue": "Etc/UTC",
+          "isSecret": false,
+          "isPreset": false
+        }
+      ],
+      "notes": [
+        "No model is included. After it's up, open Open WebUI and pull one — e.g. llama3.2, qwen2.5 or phi3 — from the model menu.",
+        "The first person to sign up to Open WebUI becomes the admin, with full control (an admin can run code in the container and drive the model). Sign up immediately, then turn off new sign-ups (Admin → Settings). It's safest reached in-app over meshDeck rather than a public port.",
+        "Ollama's API has no authentication, so it's bound to localhost only and reached in-app — never put it on your LAN.",
+        "Models are large: a 7B model is about 4–5 GB, and they share the host's main disk, so pulling several can fill it. Remove models you don't use (in Open WebUI, or 'ollama rm').",
+        "It runs on CPU by default, so it works on any host (just slower). A 7B model wants roughly 8 GB of free RAM. For an NVIDIA GPU, add a device reservation and the NVIDIA container toolkit.",
+        "First launch downloads a small embedding model for search — give it a minute on first boot."
+      ]
     }
   ],
   "featured": [
+    "localai",
     "media-stack",
     "observability",
     "immich",
     "smart-home",
-    "nextcloud",
-    "pihole"
+    "nextcloud"
   ]
 }
