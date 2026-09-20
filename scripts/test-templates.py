@@ -17,6 +17,35 @@ def value_for(v):
 def run(args, env, timeout):
     return subprocess.run(args, env=env, capture_output=True, text=True, timeout=timeout)
 
+def default_port_collisions(t):
+    """Two port vars sharing a default host port would clash on a default deploy — but CI
+    assigns unique ports, so it wouldn't otherwise be caught. Return {port: [keys]} for clashes."""
+    seen = {}
+    for v in t["variables"]:
+        if "PORT" in v["key"] and v.get("defaultValue"):
+            seen.setdefault(v["defaultValue"], []).append(v["key"])
+    return {p: ks for p, ks in seen.items() if len(ks) > 1}
+
+def validate(t):
+    """A super stack (e.g. a VPN killswitch) can't fully deploy in CI — its download client has
+    no network until the VPN connects with real credentials, and it pulls ~10 heavy images. So
+    validate the compose parses and interpolates (NOT a runtime guarantee); the owner verifies
+    the VPN path live."""
+    env = dict(os.environ)
+    for v in t["variables"]:
+        env[v["key"]] = value_for(v)
+    with tempfile.NamedTemporaryFile("w", suffix=".yml", delete=False) as f:
+        f.write(t["compose"]); path = f.name
+    try:
+        res = run(["docker", "compose", "-f", path, "config", "-q"], env, 60)
+        if res.returncode != 0:
+            return False, (res.stderr.strip().splitlines() or [""])[-1][:200]
+        return True, "config valid (super stack — not deployed in CI)"
+    except subprocess.TimeoutExpired:
+        return False, "config timed out"
+    finally:
+        os.unlink(path)
+
 def test(t):
     proj = "mdtest-" + t["id"]
     env = dict(os.environ)
@@ -51,7 +80,13 @@ def main():
     cat = json.load(open(CATALOG))
     failures = []
     for t in cat["templates"]:
-        ok, detail = test(t)
+        clashes = default_port_collisions(t)
+        if clashes:
+            print(f"FAIL  {t['id']:16} default port collision: {clashes}", flush=True)
+            failures.append(t["id"])
+            continue
+        # A super stack is credential-gated and heavy — validate its compose, don't deploy.
+        ok, detail = validate(t) if t.get("category") == "Super stacks" else test(t)
         print(f"{'OK  ' if ok else 'FAIL'}  {t['id']:16} {detail}", flush=True)
         if not ok:
             failures.append(t["id"])

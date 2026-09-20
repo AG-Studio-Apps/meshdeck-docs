@@ -1,5 +1,5 @@
 {
- "version": 5,
+ "version": 6,
  "categories": [
   "Web & CMS",
   "Media",
@@ -7,7 +7,8 @@
   "Tools",
   "Home",
   "Databases",
-  "Downloads"
+  "Downloads",
+  "Super stacks"
  ],
  "templates": [
   {
@@ -1343,6 +1344,148 @@
    ],
    "notes": [
     "Runs as PUID/PGID 1000; adjust in the compose to match your files."
+   ]
+  },
+  {
+   "id": "media-stack",
+   "name": "Media automation",
+   "tagline": "Jellyfin + Sonarr/Radarr/Lidarr + Prowlarr + qBittorrent (VPN) + SABnzbd + Jellyseerr",
+   "category": "Super stacks",
+   "symbol": "play.rectangle.on.rectangle",
+   "version": 1,
+   "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: openvpn\n      OPENVPN_USER: ${OPENVPN_USER}\n      OPENVPN_PASSWORD: ${OPENVPN_PASSWORD}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
+   "variables": [
+    {
+     "key": "VPN_PROVIDER",
+     "label": "VPN provider",
+     "defaultValue": "protonvpn",
+     "isSecret": false,
+     "isPreset": false,
+     "help": "A provider gluetun supports over OpenVPN: nordvpn, pia, windscribe, surfshark, protonvpn. (Mullvad is WireGuard-only.)"
+    },
+    {
+     "key": "OPENVPN_USER",
+     "label": "OpenVPN username",
+     "defaultValue": "",
+     "isSecret": false,
+     "isPreset": false,
+     "help": "From your VPN provider's dashboard (not your account login). ProtonVPN: append +pmp for port forwarding."
+    },
+    {
+     "key": "OPENVPN_PASSWORD",
+     "label": "OpenVPN password",
+     "defaultValue": "",
+     "isSecret": true,
+     "isPreset": false,
+     "help": "Your VPN's OpenVPN password."
+    },
+    {
+     "key": "VPN_COUNTRIES",
+     "label": "Server country",
+     "defaultValue": "Netherlands",
+     "isSecret": false,
+     "isPreset": false,
+     "help": "Server country, or a comma-separated list."
+    },
+    {
+     "key": "DATA_PATH",
+     "label": "Data directory",
+     "defaultValue": "/srv/media",
+     "isSecret": false,
+     "isPreset": false,
+     "help": "One host folder for downloads AND media so imports hardlink instead of copy. The apps see it at /data."
+    },
+    {
+     "key": "TZ",
+     "label": "Time zone",
+     "defaultValue": "Etc/UTC",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PUID",
+     "label": "User ID",
+     "defaultValue": "1000",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PGID",
+     "label": "Group ID",
+     "defaultValue": "1000",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "QBIT_PORT",
+     "label": "qBittorrent port",
+     "defaultValue": "8080",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "SABNZBD_PORT",
+     "label": "SABnzbd port",
+     "defaultValue": "8081",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "PROWLARR_PORT",
+     "label": "Prowlarr port",
+     "defaultValue": "9696",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "SONARR_PORT",
+     "label": "Sonarr port",
+     "defaultValue": "8989",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "RADARR_PORT",
+     "label": "Radarr port",
+     "defaultValue": "7878",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "LIDARR_PORT",
+     "label": "Lidarr port",
+     "defaultValue": "8686",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "BAZARR_PORT",
+     "label": "Bazarr port",
+     "defaultValue": "6767",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "JELLYFIN_PORT",
+     "label": "Jellyfin port",
+     "defaultValue": "8096",
+     "isSecret": false,
+     "isPreset": false
+    },
+    {
+     "key": "JELLYSEERR_PORT",
+     "label": "Jellyseerr port",
+     "defaultValue": "5055",
+     "isSecret": false,
+     "isPreset": false
+    }
+   ],
+   "notes": [
+    "qBittorrent has network ONLY through the VPN (killswitch) \u2014 it stays down until Gluetun connects, so it waits for a healthy VPN.",
+    "The provider must support OpenVPN in Gluetun: NordVPN, PIA, Windscribe, Surfshark, ProtonVPN. Mullvad is WireGuard-only.",
+    "DATA_PATH is one folder holding downloads and media (e.g. /srv/media) so Sonarr/Radarr hardlink imports instead of copying.",
+    "After it's up: in each *arr app add the download client qBittorrent at host 'gluetun' port 8080 and SABnzbd at 'sabnzbd:8080'; add Prowlarr as the indexer; point Jellyseerr at Jellyfin.",
+    "qBittorrent 4.6+ may reject the *arr connection until you turn off 'Enable Host header validation' in its Web UI (Options \u2192 Web UI)."
    ]
   }
  ]
