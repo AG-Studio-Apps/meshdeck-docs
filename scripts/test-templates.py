@@ -83,10 +83,30 @@ def test(t):
 # (e.g. observability, smart-home) deploys fully.
 VALIDATE_ONLY = {"media-stack", "media-stack-wg", "immich", "localai", "authentik"}
 
+def changed_ids(cat):
+    """Template ids that are new or whose definition changed vs the previous commit — so a push
+    tests only what it touched (the catalog is large; pulling every image each push trips registry
+    rate limits). Returns None to mean "test everything": TEST_ALL is set (manual/scheduled run), or
+    there is no previous commit to diff against."""
+    if os.environ.get("TEST_ALL"):
+        return None
+    prev = subprocess.run(["git", "show", "HEAD~1:templates.json"], capture_output=True, text=True)
+    if prev.returncode != 0:
+        return None  # shallow clone / first commit — no baseline, test all
+    old = {t["id"]: t for t in json.loads(prev.stdout)["templates"]}
+    return {t["id"] for t in cat["templates"] if old.get(t["id"]) != t}
+
 def main():
     cat = json.load(open(CATALOG))
+    only = changed_ids(cat)
+    templates = cat["templates"] if only is None else [t for t in cat["templates"] if t["id"] in only]
+    if only is not None:
+        print(f"Testing {len(templates)} changed template(s), skipping "
+              f"{len(cat['templates']) - len(templates)} unchanged.", flush=True)
+        if not templates:
+            print("No template changes to test."); return
     failures = []
-    for t in cat["templates"]:
+    for t in templates:
         clashes = default_port_collisions(t)
         if clashes:
             print(f"FAIL  {t['id']:16} default port collision: {clashes}", flush=True)
@@ -96,7 +116,7 @@ def main():
         print(f"{'OK  ' if ok else 'FAIL'}  {t['id']:16} {detail}", flush=True)
         if not ok:
             failures.append(t["id"])
-    total = len(cat["templates"])
+    total = len(templates)
     print(f"\n{total - len(failures)}/{total} templates OK")
     if failures:
         print("FAILED:", ", ".join(failures))

@@ -1,11 +1,16 @@
-# Deploy every stack template in templates.json on the runner's Docker daemon
-# and confirm it comes up. Runs when the catalog changes, or by hand — so a
-# template with a dead image or broken compose fails here, not on someone's host.
+# Deploy the stack templates in templates.json on the runner's Docker daemon and
+# confirm they come up — so a template with a dead image or broken compose fails
+# here, not on someone's host. A push tests only the templates it changed (the
+# catalog is large; pulling every image each push trips registry rate limits and
+# flakes). A manual run or the weekly schedule tests everything (catches upstream
+# image rot).
 name: Test stack templates
 on:
   push:
     paths: ["templates.json", "scripts/test-templates.py"]
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays 06:00 UTC — full sweep for image rot
 permissions:
   contents: read
 jobs:
@@ -14,5 +19,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy and check every template
+        with:
+          fetch-depth: 2  # so a push can diff the catalog against the previous commit
+      - name: Deploy and check templates
         run: python3 scripts/test-templates.py
+        env:
+          # push → only changed templates; manual/scheduled → everything
+          TEST_ALL: ${{ github.event_name != 'push' && '1' || '' }}
