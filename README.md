@@ -16,7 +16,7 @@ no build step of our own.
 
 `privacy/index.md` and `eula/index.md` describe what the app and the relay do. If either changes,
 change the page in the same commit and bump `legal_effective` and `legal_version` in `_config.yml`.
-Facts in the privacy policy come from the app source and `mdrelay`; when in doubt, read the code.
+Facts in the privacy policy come from the app and relay source; when in doubt, read the code.
 
 ## Build locally
 

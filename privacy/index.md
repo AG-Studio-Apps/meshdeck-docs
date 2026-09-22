@@ -112,7 +112,7 @@ AI diagnosis is **off** until you add your own API key for a provider you choose
 
 ## 6. Instant alerts and the relay (optional)
 
-Instant alerts are **off** until you turn them on in Settings. When you do, the App asks iOS for permission to send notifications and registers your phone with a small relay we run at `mdrelay.meshterm.com`. Apple's push service delivers the notifications.
+Instant alerts are **off** until you turn them on in Settings. When you do, the App asks iOS for permission to send notifications and registers your phone with a small relay we run. Apple's push service delivers the notifications.
 
 When you enrol a host, the App can deploy **stackGuard**, a small agent container that watches the host's container engine sockets (Docker's, Podman's, or both) read-only and sends alerts. Each alert is encrypted on the host with a key only your phone and that host hold, so the relay forwards it without being able to read it — it never learns a host or container name.
 

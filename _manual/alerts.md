@@ -43,4 +43,4 @@ Alerts enrol per **privilege domain**, because that is what one agent can see. O
 
 ## Privacy
 
-Alerts go through `mdrelay.meshterm.com`. The relay holds your push token, random identifiers and your preferences, and cannot read what an alert says. The [Privacy Policy]({{ '/privacy/' | relative_url }}) lists exactly what it holds and can see.
+Alerts go through a small relay we run. It holds your push token, random identifiers and your preferences, and cannot read what an alert says. The agent has no relay built in: meshDeck tells it where to post when it deploys it. The [Privacy Policy]({{ '/privacy/' | relative_url }}) lists exactly what it holds and can see.
