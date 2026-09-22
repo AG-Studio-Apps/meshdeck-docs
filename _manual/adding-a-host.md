@@ -71,4 +71,4 @@ Compare the fingerprint with the host before you trust it. A changed key can mea
 
 ## Adding more hosts
 
-The free plan includes one host with every feature. Adding a second needs meshDeck Pro. When you reach the limit the sheet shows **Multiple hosts need meshDeck Pro**. See [Free and Pro]({{ '/manual/pro/' | relative_url }}).
+The free plan includes one host (every feature except instant push alerts). Adding a second needs meshDeck Pro. When you reach the limit the sheet shows **Multiple hosts need meshDeck Pro**. See [Free and Pro]({{ '/manual/pro/' | relative_url }}).

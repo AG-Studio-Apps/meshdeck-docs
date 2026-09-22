@@ -6,6 +6,8 @@ lede: Push notifications when a host needs attention, from a small agent you dep
 
 A small agent on your host — **stackGuard** — watches your containers and tells your phone when something needs attention: a container crashes or keeps restarting, a health check fails, the disk is nearly full, or a container recovers. The notification travels through a relay we run and Apple's push service, and is **encrypted on the host and decrypted on your phone**, so the relay never learns which host or container it is about.
 
+Instant alerts are part of [meshDeck Pro]({{ '/manual/pro/' | relative_url }}). The free plan is one host; alerts, like extra hosts, need Pro.
+
 ## Turn it on
 
 In **Settings → Notifications**, switch on **Instant alerts**. iOS asks for permission to send notifications. The status line reads "Registering this phone…" and then "On."

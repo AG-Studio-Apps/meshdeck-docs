@@ -30,7 +30,7 @@ In Portainer, open **My account → Access tokens** and create a token. In meshD
 <div class="note" markdown="1">
 **What you need**
 
-An iPhone or iPad on iOS 26 or later, and a host running Docker that you can reach by SSH (with access to the Docker socket), or a Portainer server. The free plan covers one host with every feature.
+An iPhone or iPad on iOS 26 or later, and a host running Docker that you can reach by SSH (with access to the Docker socket), or a Portainer server. The free plan covers one host; more hosts and instant push alerts need meshDeck Pro.
 </div>
 
 <div class="note note--tip" markdown="1">

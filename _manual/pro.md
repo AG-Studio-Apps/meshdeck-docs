@@ -1,13 +1,14 @@
 ---
 title: Free and Pro
-lede: One host is free with everything. More than one needs meshDeck Pro.
+lede: One host is free. More hosts and instant push alerts need meshDeck Pro.
 ---
-meshDeck is **free for one host, with every feature**. The only thing that costs money is more than one host.
+meshDeck is **free for one host**. meshDeck Pro adds every host you have and instant push alerts.
 
 | | Free | meshDeck Pro |
 |---|---|---|
 | Hosts | One | Unlimited |
-| Every feature | Yes | Yes |
+| Instant push alerts | — | Yes |
+| Everything else | Yes | Yes |
 | Account | None | None |
 
 meshDeck Pro is an **annual, auto-renewing subscription** bought through the App Store. The price, and any free trial, are shown in the app before you subscribe.
