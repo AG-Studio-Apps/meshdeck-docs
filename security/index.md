@@ -8,7 +8,7 @@ meshDeck manages the machines that run your things, so it is built to hold as li
 
 ## Connecting to your hosts
 
-- **Nothing exposed.** meshDeck reaches Docker through an SSH session (running `docker system dial-stdio`, or the `docker` command line), or through Portainer's HTTPS API with a token. It never asks you to open Docker's API on the network, and never asks for TCP 2375.
+- **Nothing exposed.** meshDeck reaches Docker or Podman through an SSH session (running `docker system dial-stdio` or `podman system dial-stdio`, or the `docker` or `podman` command line), or through Portainer's HTTPS API with a token. It never asks you to open Docker's API on the network, and never asks for TCP 2375.
 - **No middleman.** The connection goes from your phone to your host. There is no meshDeck server in between, and no account.
 - **Host keys are pinned on first use.** The first time you connect, you compare the fingerprint and choose whether to trust it. If it later changes, meshDeck stops and asks: **Host key changed**, with the saved and presented fingerprints side by side. A changed key can mean a reinstall or an interception, and the prompt says so.
 - **Certificates are pinned too.** For Portainer and other HTTPS endpoints, the system's trust store is tried first, and a self-signed certificate is pinned when you accept it. A changed certificate stops the connection until you decide. There is no "trust anything" switch.

@@ -1,12 +1,14 @@
 ---
 title: Adding a host
-lede: Connect to a Docker host over SSH, through Portainer, or with the docker command line.
+lede: Connect to a Docker or Podman host over SSH, through Portainer, or with the command line.
 ---
 Add a host from the empty Fleet screen (**Add host**), from the **+** menu (**Add host…**), or from the host switcher. The sheet is titled **Add Host**, and a control at the top called **Connect via** offers three ways in: **SSH**, **Portainer** and **Advanced**.
 
 ## SSH
 
-SSH is the default. meshDeck opens an SSH session and runs `docker system dial-stdio`, so it talks to the Docker Engine API through the socket without exposing anything. Your SSH user needs the `docker` command and access to the Docker socket.
+SSH is the default. meshDeck opens an SSH session and runs `docker system dial-stdio` (or `podman system dial-stdio`), so it talks to the Engine API through the socket without exposing anything. Your SSH user needs the `docker` command and access to the Docker socket, or Podman — see [Podman hosts]({{ '/manual/podman/' | relative_url }}).
+
+Once the host is added, meshDeck looks for the engines it runs and adds every one that is ready as an **environment** of the host; the rest are listed on the host's page with what to do first. A host with Docker and Podman shows both, and Fleet switches between them.
 
 Fill in the **Host** section:
 
@@ -38,9 +40,9 @@ Tap **Connect**. meshDeck lists the Docker environments on the server. If there 
 
 The server's certificate is pinned the first time you connect. If it is self-signed you will be asked to trust it.
 
-## Advanced (the docker command line)
+## Advanced (the command line)
 
-**Advanced** runs the `docker` command over SSH instead of using the Engine API. Use it when the SSH user cannot reach the Docker socket directly. It has a few limits: statistics update about every two seconds, and a container whose settings cannot be expressed as `docker create` flags cannot be recreated from here.
+**Advanced** runs the `docker` command over SSH instead of using the Engine API — or `podman`, if that is what the host has. Use it when the SSH user cannot reach the engine's socket directly. It has a few limits: statistics update about every two seconds, and a container whose settings cannot be expressed as `docker create` flags cannot be recreated from here.
 
 Turn on **Run docker with sudo** if the command needs it, and choose where the sudo password comes from:
 
@@ -54,7 +56,7 @@ Passwordless sudo for just `docker` is the cleaner option. Tap **Copy sudoers li
 echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/docker" | sudo tee /etc/sudoers.d/meshdeck
 ```
 
-**Connect** checks `docker version` first. If it succeeds you will see "Docker &lt;version&gt; on &lt;os&gt;/&lt;arch&gt;". If not, the message says what went wrong: docker is not installed or not on your PATH, the user cannot use the Docker socket, sudo needs a password, and so on.
+**Connect** checks `docker version` first, then `podman version` if there is no docker. If it succeeds you will see the engine and its version. If not, the message says what went wrong: neither is installed or on your PATH, the user cannot use the socket, sudo needs a password, and so on.
 
 ## Trust prompts
 

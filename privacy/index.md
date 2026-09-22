@@ -2,7 +2,7 @@
 title: Privacy Policy
 eyebrow: Legal
 lede: What meshDeck handles, where it lives, and what leaves your phone.
-description: The Privacy Policy for meshDeck, the iPhone and iPad app for Docker and Portainer hosts. No account, no analytics, no advertising, and no server of ours between you and your hosts.
+description: The Privacy Policy for meshDeck, the iPhone and iPad app for Docker, Podman and Portainer hosts. No account, no analytics, no advertising, and no server of ours between you and your hosts.
 ---
 <div class="legal" markdown="1">
 
@@ -54,10 +54,10 @@ We never receive:
 
 There is no meshDeck server in the path between your phone and your hosts. The App connects directly to:
 
-- **your hosts**, over SSH (with `docker system dial-stdio` or the docker command line) or over HTTPS to your own **Portainer**, using an access token you create;
+- **your hosts**, over SSH (with `docker system dial-stdio` or `podman system dial-stdio`, or the docker or podman command line) or over HTTPS to your own **Portainer**, using an access token you create;
 - **your hosts through Tailscale**, using a Tailscale node built into the App, when you choose that for a host (section 7).
 
-Host keys and server certificates are pinned the first time you connect, and you are asked before a changed one is accepted. The App never asks you to expose Docker's API on the internet.
+Host keys and server certificates are pinned the first time you connect, and you are asked before a changed one is accepted. The App never asks you to expose Docker's or Podman's API on the internet.
 
 ## 3. What is stored on your device
 
@@ -100,7 +100,7 @@ AI diagnosis is **off** until you add your own API key for a provider you choose
 - up to 200 of the newest log lines, capped at 8 KB, after masking;
 - about the last minute of CPU and memory readings;
 - the names of the other containers, volumes and networks linked to it, and any broken link;
-- the container's lifecycle events from the last 15 minutes, and the Docker version.
+- the container's lifecycle events from the last 15 minutes, and the engine version.
 
 **What is not sent:** vault values, SSH keys, passwords, tokens, your host's address, port bindings, mounts, or any other container's environment or logs. A vault-bound variable is replaced by a placeholder that names the entry, never its value.
 
@@ -114,7 +114,7 @@ AI diagnosis is **off** until you add your own API key for a provider you choose
 
 Instant alerts are **off** until you turn them on in Settings. When you do, the App asks iOS for permission to send notifications and registers your phone with a small relay we run at `mdrelay.meshterm.com`. Apple's push service delivers the notifications.
 
-When you enrol a host, the App can deploy **stackGuard**, a small agent container that watches the host's Docker socket read-only and sends alerts. Each alert is encrypted on the host with a key only your phone and that host hold, so the relay forwards it without being able to read it — it never learns a host or container name.
+When you enrol a host, the App can deploy **stackGuard**, a small agent container that watches the host's container engine sockets (Docker's, Podman's, or both) read-only and sends alerts. Each alert is encrypted on the host with a key only your phone and that host hold, so the relay forwards it without being able to read it — it never learns a host or container name.
 
 **What the relay holds**, in a file on its server:
 

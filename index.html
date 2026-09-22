@@ -1,7 +1,7 @@
 ---
 layout: default
 title: meshDeck
-description: "See every container on every host at a glance, find what's broken on a live map, and fix it. A native iPhone and iPad app for Docker and Portainer, over Tailscale or SSH with no port exposed."
+description: "See every container on every host at a glance, find what's broken on a live map, and fix it. A native iPhone and iPad app for Docker, Podman and Portainer, over Tailscale or SSH with no port exposed."
 body_class: home
 ---
 <section class="hero">
@@ -35,7 +35,7 @@ body_class: home
     <div class="section__head">
       <p class="eyebrow">What it does</p>
       <h2>Everything you reach for, in one app.</h2>
-      <p>Docker and Portainer hosts, side by side. Built native for iPhone and iPad, so it is fast and reads at a glance.</p>
+      <p>Docker, Podman and Portainer hosts, side by side. Built native for iPhone and iPad, so it is fast and reads at a glance.</p>
     </div>
     <div class="grid grid--3">
       <div class="card">{% include icon.html name="fleet" %}<h3>Fleet at a glance</h3><p>Every host and container as a live card with status and CPU, and memory and history a tap away. Colour is never the only signal.</p></div>
@@ -101,10 +101,10 @@ body_class: home
     <div class="section__head">
       <p class="eyebrow">How it connects</p>
       <h2>Nothing exposed. Nothing in the middle.</h2>
-      <p>meshDeck reaches your hosts the way careful people do. It never asks you to open Docker's API to the internet, and there is no server of ours between your phone and your hosts.</p>
+      <p>meshDeck reaches your hosts the way careful people do. It never asks you to open Docker's or Podman's API to the internet, and there is no server of ours between your phone and your hosts.</p>
     </div>
     <div class="diagram">
-      <svg viewBox="0 0 960 330" role="img" aria-label="Diagram: the meshDeck app reaches a host over Tailscale or an SSH tunnel to the Docker socket, or over HTTPS to Portainer. An exposed Docker port on TCP 2375 is crossed out.">
+      <svg viewBox="0 0 960 330" role="img" aria-label="Diagram: the meshDeck app reaches a host over Tailscale or an SSH tunnel to the Docker or Podman socket, or over HTTPS to Portainer. An exposed Docker port on TCP 2375 is crossed out.">
         <rect class="d-box" x="24" y="90" width="220" height="150" rx="18"/>
         <text x="134" y="150" text-anchor="middle" font-size="22" font-weight="700">meshDeck</text>
         <text class="d-dim" x="134" y="180" text-anchor="middle" font-size="15">on your iPhone or iPad</text>
@@ -120,7 +120,7 @@ body_class: home
         <rect class="d-box" x="520" y="60" width="416" height="210" rx="18"/>
         <text x="546" y="96" font-size="18" font-weight="700">Your host</text>
         <rect class="d-box" x="546" y="112" width="180" height="52" rx="10"/>
-        <text x="636" y="144" text-anchor="middle" font-size="15">Docker socket</text>
+        <text x="636" y="144" text-anchor="middle" font-size="15">Engine socket</text>
         <text class="d-dim d-mono" x="636" y="184" text-anchor="middle" font-size="12">stays on the host</text>
         <rect class="d-box" x="746" y="112" width="166" height="52" rx="10"/>
         <text x="829" y="144" text-anchor="middle" font-size="15">Portainer</text>

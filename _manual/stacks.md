@@ -1,8 +1,8 @@
 ---
 title: Stacks and templates
-lede: Create, redeploy and remove Docker Compose stacks, from a compose file, a template or a Git repository.
+lede: Create, redeploy and remove Compose stacks, from a compose file, a template or a Git repository.
 ---
-A **stack** is a Docker Compose project. meshDeck lists the stacks on a host under **STACKS** in Fleet and lets you create, redeploy, stop, start and remove them.
+A **stack** is a Compose project — `docker compose` on a Docker environment, `podman compose` on a Podman one. meshDeck lists the stacks on a host under **STACKS** in Fleet and lets you create, redeploy, stop, start and remove them.
 
 ## A stack's page
 
@@ -57,4 +57,4 @@ On a Portainer host the gallery also shows that server's **App Templates** and *
 
 ## When something goes wrong
 
-The message says what happened, for example "docker compose is not available on this host", "git is not installed on this host", or "A vault secret used by this stack is missing". See [Troubleshooting]({{ '/manual/troubleshooting/' | relative_url }}).
+The message says what happened, for example "docker compose is not available on this host", "git is not installed on this host", or "A vault secret used by this stack is missing". On a Podman environment the compose editor also lists, before you deploy, anything in the file that will not carry as written — see [Podman hosts]({{ '/manual/podman/' | relative_url }}). See [Troubleshooting]({{ '/manual/troubleshooting/' | relative_url }}).

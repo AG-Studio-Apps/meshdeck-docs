@@ -1,7 +1,7 @@
 title: meshDeck
 tagline: Your whole fleet. One glance.
 description: >-
-  meshDeck is a native iPhone and iPad app for Docker and Portainer hosts. See every
+  meshDeck is a native iPhone and iPad app for Docker, Podman and Portainer hosts. See every
   container at a glance, find what's broken on a live map, and fix it, over Tailscale
   or SSH with no port exposed and no account to create.
 lang: en-GB
@@ -16,8 +16,8 @@ company_number: "17447911"
 # Rendered in the Privacy Policy: "the relay runs on a server we operate in ...".
 relay_region: "the United Kingdom"
 # Shown at the top of the Privacy Policy and the EULA. Set on publication.
-legal_effective: "18 September 2026"
-legal_version: "1.0"
+legal_effective: "22 September 2026"
+legal_version: "1.1"
 
 markdown: kramdown
 kramdown:

@@ -2,18 +2,18 @@
 title: Overview
 lede: What meshDeck is, what you need, and how the app is laid out.
 ---
-meshDeck is a native app for iPhone and iPad that shows the containers on your Docker and Portainer hosts and lets you act on them. It connects from your phone straight to your hosts, over Tailscale, SSH or HTTPS. There is no account, and there is no server of ours in the connection.
+meshDeck is a native app for iPhone and iPad that shows the containers on your Docker, Podman and Portainer hosts and lets you act on them. It connects from your phone straight to your hosts, over Tailscale, SSH or HTTPS. There is no account, and there is no server of ours in the connection.
 
 ## What you need
 
 - An iPhone or iPad running iOS 26 or later.
-- A host running Docker that you can reach by **SSH** (your username needs to be able to use the Docker socket), **or** a **Portainer** server and an access token.
+- A host running Docker or Podman that you can reach by **SSH** (your username needs to be able to use the engine's socket — see [Podman hosts]({{ '/manual/podman/' | relative_url }}) for rootful and rootless Podman), **or** a **Portainer** server and an access token.
 - Optionally, a Tailscale account, if you want to reach hosts on your tailnet. meshDeck has a built-in Tailscale node, so the Tailscale app is not required.
 
 <div class="note" markdown="1">
 **Nothing to open on the host**
 
-meshDeck never asks you to expose Docker's API on the internet. It reaches the Docker socket through an SSH session, or talks to Portainer over HTTPS with a token you create.
+meshDeck never asks you to expose Docker's or Podman's API on the internet. It reaches the engine's socket through an SSH session, or talks to Portainer over HTTPS with a token you create.
 </div>
 
 ## How the app is laid out
@@ -56,5 +56,5 @@ We would rather you know before you install:
 - Docker Swarm stacks are not supported.
 - SSH keys must be Ed25519 or ECDSA and have no passphrase. RSA keys are not supported.
 - Git stacks use `https://` or `http://` URLs. Repositories that need an SSH key are not supported.
-- Podman is not something we have tested, so we do not claim it.
+- Podman pods and Quadlets are not shown; see [Podman hosts]({{ '/manual/podman/' | relative_url }}).
 - The app is in English only.

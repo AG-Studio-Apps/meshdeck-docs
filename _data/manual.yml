@@ -3,6 +3,7 @@
   pages:
     - { id: overview,        title: Overview }
     - { id: adding-a-host,   title: Adding a host }
+    - { id: podman,          title: Podman hosts }
     - { id: tailscale,       title: Tailscale }
 - group: Your fleet
   pages:

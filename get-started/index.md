@@ -2,7 +2,7 @@
 title: Get started
 eyebrow: Five minutes
 lede: From install to seeing your first container.
-description: Install meshDeck, add a Docker or Portainer host over Tailscale or SSH, and see your containers in a few minutes.
+description: Install meshDeck, add a Docker, Podman or Portainer host over Tailscale or SSH, and see your containers in a few minutes.
 ---
 <ol class="steps">
 <li><strong>Install and open meshDeck</strong>There is no account to create. The app opens on an empty Fleet screen with an <strong>Add host</strong> button.</li>
@@ -30,11 +30,11 @@ In Portainer, open **My account → Access tokens** and create a token. In meshD
 <div class="note" markdown="1">
 **What you need**
 
-An iPhone or iPad on iOS 26 or later, and a host running Docker that you can reach by SSH (with access to the Docker socket), or a Portainer server. The free plan covers one host; more hosts and instant push alerts need meshDeck Pro.
+An iPhone or iPad on iOS 26 or later, and a host running Docker or Podman that you can reach by SSH (with access to the engine's socket), or a Portainer server. The free plan covers one host; more hosts and instant push alerts need meshDeck Pro.
 </div>
 
 <div class="note note--tip" markdown="1">
 **Nothing to open on the host**
 
-You do not open a port, and you never expose Docker's API. meshDeck goes in through SSH, Tailscale or Portainer's HTTPS.
+You do not open a port, and you never expose Docker's or Podman's API. meshDeck goes in through SSH, Tailscale or Portainer's HTTPS.
 </div>

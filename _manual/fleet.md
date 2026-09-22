@@ -34,7 +34,7 @@ From an item's detail you can **Remove** it — unless a container is using it, 
 
 Compose stacks appear under **STACKS**, with a badge if a stack is backed by Git or was created by meshDeck. Each card shows how many of its containers are running and whether the stack is active, stopped or deploying. Tap one for [its detail]({{ '/manual/stacks/' | relative_url }}).
 
-If the host cannot run `docker compose` you will see "docker compose is not available on this host" instead.
+If the host cannot run `docker compose` (or `podman compose`) you will see "docker compose is not available on this host" instead.
 
 ## Containers
 

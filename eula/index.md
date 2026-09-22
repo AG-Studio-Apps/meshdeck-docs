@@ -2,7 +2,7 @@
 title: Licence Agreement
 eyebrow: Legal
 lede: The terms on which you may use meshDeck.
-description: The End User Licence Agreement for meshDeck, the iPhone and iPad app for Docker and Portainer hosts.
+description: The End User Licence Agreement for meshDeck, the iPhone and iPad app for Docker, Podman and Portainer hosts.
 ---
 <div class="legal" markdown="1">
 
@@ -85,7 +85,7 @@ The output of an AI model can be wrong, incomplete or out of date. A diagnosis i
 
 The App works with services we do not control, including Tailscale, Portainer, Docker hosts and AI providers you configure. Those services have their own terms and privacy policies, and you must follow them. We are not responsible for them, for their availability, or for charges they make.
 
-Docker, Portainer and Tailscale are trademarks of their respective owners. meshDeck is independent and is not affiliated with, sponsored by or endorsed by them. Apple, iPhone and iPad are trademarks of Apple Inc.
+Docker, Podman, Portainer and Tailscale are trademarks of their respective owners. meshDeck is independent and is not affiliated with, sponsored by or endorsed by them. Apple, iPhone and iPad are trademarks of Apple Inc.
 
 ## 6. Intellectual property and open source
 

@@ -52,7 +52,7 @@ Nothing runs by itself. Every action needs your tap, and **Stop**, **Kill** and 
 
 ## What is sent
 
-Only when you tap, and from your phone straight to your provider: the container's name, image, status, health, exit code and restart count; its command and environment; up to 200 recent log lines (8 KB at most); about a minute of CPU and memory readings; the names of linked containers, volumes and networks; its events from the last 15 minutes; and the Docker version. Secrets are masked first, and if something that still looks like a secret remains, **nothing is sent**.
+Only when you tap, and from your phone straight to your provider: the container's name, image, status, health, exit code and restart count; its command and environment; up to 200 recent log lines (8 KB at most); about a minute of CPU and memory readings; the names of linked containers, volumes and networks; its events from the last 15 minutes; and the engine version. Secrets are masked first, and if something that still looks like a secret remains, **nothing is sent**.
 
 Masking works on patterns. It cannot recognise a secret that looks like ordinary text. Read the [Security page]({{ '/security/' | relative_url }}) for what it does and does not catch.
 
