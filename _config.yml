@@ -13,6 +13,8 @@ app_store_url: ""
 contact_email: james@ag-applications.com
 company: "AG Applications LTD"
 company_number: "17447911"
+# Rendered in the Privacy Policy: "the relay runs on a server we operate in ...".
+relay_region: "the United Kingdom"
 # Shown at the top of the Privacy Policy and the EULA. Set on publication.
 legal_effective: "18 September 2026"
 legal_version: "1.0"
