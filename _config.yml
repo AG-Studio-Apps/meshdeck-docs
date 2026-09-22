@@ -9,7 +9,7 @@ url: "https://meshdeck.ag-applications.com"
 baseurl: ""
 
 # Set to the App Store URL on release; the buttons that use it stay hidden until then.
-app_store_url: ""
+app_store_url: "https://apps.apple.com/app/id6812870082"
 contact_email: james@ag-applications.com
 company: "AG Applications LTD"
 company_number: "17447911"
