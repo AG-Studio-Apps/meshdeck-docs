@@ -7,7 +7,7 @@ meshDeck is a native app for iPhone and iPad that shows the containers on your D
 ## What you need
 
 - An iPhone or iPad running iOS 26 or later.
-- A host running Docker or Podman that you can reach by **SSH** (your username needs to be able to use the engine's socket — see [Podman hosts]({{ '/manual/podman/' | relative_url }}) for rootful and rootless Podman), **or** a **Portainer** server and an access token.
+- A host running Docker or Podman that you can reach by **SSH** (your username needs to be able to use the engine's socket, see [Podman hosts]({{ '/manual/podman/' | relative_url }}) for rootful and rootless Podman), **or** a **Portainer** server and an access token.
 - Optionally, a Tailscale account, if you want to reach hosts on your tailnet. meshDeck has a built-in Tailscale node, so the Tailscale app is not required.
 
 <div class="note" markdown="1">
@@ -43,18 +43,15 @@ Colour is never the only signal: every status also has its own icon.
 
 Only **Down** and **Unhealthy** count as "needs attention" on the summary card.
 
-## What meshDeck does not do
+## Coming later
 
-We would rather you know before you install:
+meshDeck is actively developed. High on the list, in rough order:
 
-- No widgets and no Siri Shortcuts. There *is* an optional lock — see Settings → Lock — which covers the app when it goes to the background and asks for Face ID, Touch ID or your passcode before it opens again. It is off until you turn it on.
-- No iCloud sync. Your hosts, drafts and settings live on the device.
-- No automatic discovery of hosts. You add each one by hand.
-- No light mode. The app is dark.
-- No changing a saved host's sign-in method. You can edit its name, address, port and username (swipe a host right in Settings, or press and hold it), and change how it is reached, its sudo settings and its alerts — but to sign in a different way, remove it and add it again.
-- No standalone image pull. Images pull when you deploy a container or stack, not on their own. (You *can* now remove and prune images and volumes, and create and remove networks — see Fleet.)
-- Docker Swarm stacks are not supported.
-- SSH keys must be Ed25519 or ECDSA and have no passphrase. RSA keys are not supported.
-- Git stacks use `https://` or `http://` URLs. Repositories that need an SSH key are not supported.
-- Podman pods and Quadlets are not shown; see [Podman hosts]({{ '/manual/podman/' | relative_url }}).
-- The app is in English only.
+- **Light mode.** It is dark for now.
+- **Home Screen widgets and Siri Shortcuts.**
+- **Picking a host from your tailnet**, instead of typing each one in.
+- **Passphrase-protected SSH keys.** Ed25519 and ECDSA keys work today.
+- **Git stacks over SSH.** `https://` and `http://` URLs work today.
+- **More languages.** English for now.
+
+A few things stay out by design: no iCloud sync, so your hosts, drafts and settings live on the device; no Docker Swarm; and RSA SSH keys (Ed25519 and ECDSA are supported). Podman pods and Quadlets are not shown either, meshDeck works with containers, stacks and images. See [Podman hosts]({{ '/manual/podman/' | relative_url }}).

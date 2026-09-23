@@ -7,7 +7,7 @@ meshDeck is **free for one host**. meshDeck Pro adds every host you have and ins
 | | Free | meshDeck Pro |
 |---|---|---|
 | Hosts | One | Unlimited |
-| Instant push alerts | — | Yes |
+| Instant push alerts |, | Yes |
 | Everything else | Yes | Yes |
 | Account | None | None |
 

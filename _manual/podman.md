@@ -2,23 +2,23 @@
 title: Podman hosts
 lede: Podman works beside Docker, rootful or rootless, as a second environment on the same host.
 ---
-meshDeck speaks the Docker Engine API, and Podman answers it too. A host running Podman — on its own, or beside Docker — shows up in the app as one or more **environments**, each with its own containers, stacks and alerts. Podman 4.9 or later is supported; Podman 5 is what we recommend.
+meshDeck speaks the Docker Engine API, and Podman answers it too. A host running Podman, on its own, or beside Docker, shows up in the app as one or more **environments**, each with its own containers, stacks and alerts. Podman 4.9 or later is supported; Podman 5 is what we recommend.
 
 ## Environments
 
 A host can expose more than one container engine. meshDeck keeps each as an environment of that host:
 
-- **Docker** — the Docker socket, `/var/run/docker.sock`.
-- **Podman** — root's Podman, the socket at `/run/podman/podman.sock`.
-- **Podman (user)** — the SSH user's rootless Podman, the socket under that user's runtime directory.
+- **Docker**, the Docker socket, `/var/run/docker.sock`.
+- **Podman**, root's Podman, the socket at `/run/podman/podman.sock`.
+- **Podman (user)**, the SSH user's rootless Podman, the socket under that user's runtime directory.
 
-When a host has more than one, a control at the top of **Fleet** (and of the containers column on iPad) switches between them; the app remembers which one you last used on each host. Systems, drafts and "copy to host" name an environment, not just a host — "orca12 · Podman (user)" — so a stack goes exactly where you sent it.
+When a host has more than one, a control at the top of **Fleet** (and of the containers column on iPad) switches between them; the app remembers which one you last used on each host. Systems, drafts and "copy to host" name an environment, not just a host, "orca12 · Podman (user)", so a stack goes exactly where you sent it.
 
 Each environment is listed under **Environments** on the host's page in **Settings → Hosts**, with how it is reached (API, API via sudo, CLI), the engine version and its state. Swipe one to remove it; the host's first environment stays.
 
 ## Finding the engines
 
-When you add an SSH host, meshDeck looks at what it runs: which of `docker` and `podman` are installed, which sockets exist, whether the rootless prerequisites are there, and whether the user has passwordless sudo. Every engine that is ready is added as an environment straight away; one that needs setup is listed under **Environments** with what to do first. **Find engines on this host** runs the same check again whenever you like — after you install Podman, enable a socket, or grant sudo.
+When you add an SSH host, meshDeck looks at what it runs: which of `docker` and `podman` are installed, which sockets exist, whether the rootless prerequisites are there, and whether the user has passwordless sudo. Every engine that is ready is added as an environment straight away; one that needs setup is listed under **Environments** with what to do first. **Find engines on this host** runs the same check again whenever you like, after you install Podman, enable a socket, or grant sudo.
 
 ### Rootful Podman
 
@@ -28,9 +28,9 @@ Root's socket is root-only; there is no group to join as there is for Docker. me
 
 The SSH user's own Podman needs three things, and the host page lists whichever are missing, as commands you can copy:
 
-- the rootless prerequisites — `uidmap` and `slirp4netns` (or `pasta`); on Debian and Ubuntu, `sudo apt install -y uidmap slirp4netns passt`, on Fedora and RHEL, `sudo dnf install -y …`;
-- the user socket — `systemctl --user enable --now podman.socket`;
-- linger, so the socket outlives your login — `loginctl enable-linger $USER`.
+- the rootless prerequisites, `uidmap` and `slirp4netns` (or `pasta`); on Debian and Ubuntu, `sudo apt install -y uidmap slirp4netns passt`, on Fedora and RHEL, `sudo dnf install -y …`;
+- the user socket, `systemctl --user enable --now podman.socket`;
+- linger, so the socket outlives your login, `loginctl enable-linger $USER`.
 
 The package install is yours to run. The two user-level commands meshDeck can run for you over the SSH session, with your consent.
 
@@ -47,7 +47,7 @@ Everything you do on a Docker host: the fleet, stats, logs, the terminal, action
 
 ## Alerts on a Podman host
 
-[Instant alerts]({{ '/manual/alerts/' | relative_url }}) enrol per **privilege domain**, because that is what one agent can see. Root's engines — Docker and rootful Podman — share one enrolment and one stackGuard, which watches both sockets and says which engine an alert came from. A rootless Podman environment enrols on its own ("Alerts for &lt;user&gt;'s rootless Podman") and gets its own stackGuard, run as that user; a rootless agent comes back after a reboot only with linger on and `systemctl --user enable podman-restart`.
+[Instant alerts]({{ '/manual/alerts/' | relative_url }}) enrol per **privilege domain**, because that is what one agent can see. Root's engines, Docker and rootful Podman, share one enrolment and one stackGuard, which watches both sockets and says which engine an alert came from. A rootless Podman environment enrols on its own ("Alerts for &lt;user&gt;'s rootless Podman") and gets its own stackGuard, run as that user; a rootless agent comes back after a reboot only with linger on and `systemctl --user enable podman-restart`.
 
 ## Not covered
 

@@ -4,7 +4,7 @@ lede: Push notifications when a host needs attention, from a small agent you dep
 ---
 ## The idea
 
-A small agent on your host — **stackGuard** — watches your containers and tells your phone when something needs attention: a container crashes or keeps restarting, a health check fails, the disk is nearly full, or a container recovers. The notification travels through a relay we run and Apple's push service, and is **encrypted on the host and decrypted on your phone**, so the relay never learns which host or container it is about.
+A small agent on your host, **stackGuard**, watches your containers and tells your phone when something needs attention: a container crashes or keeps restarting, a health check fails, the disk is nearly full, or a container recovers. The notification travels through a relay we run and Apple's push service, and is **encrypted on the host and decrypted on your phone**, so the relay never learns which host or container it is about.
 
 Instant alerts are part of [meshDeck Pro]({{ '/manual/pro/' | relative_url }}). The free plan is one host; alerts, like extra hosts, need Pro.
 
@@ -21,7 +21,7 @@ In **Settings → Notifications**, switch on **Instant alerts**. iOS asks for pe
 | **Low disk space** | On | The host's container storage is nearly full. |
 | **Recovered** | On | A container that had a problem is running again. |
 | **Host silent** | On | A host stopped reporting in, or is back. |
-| **Image updates** | Off | A daily digest of images with a newer version available. *Not sending yet — a later release.* |
+| **Image updates** | Off | A daily digest of images with a newer version available. *Not sending yet, a later release.* |
 
 ## Enrol a host and deploy the agent
 
@@ -33,7 +33,7 @@ Alerts enrol per **privilege domain**, because that is what one agent can see. O
 
 **Send a test alert.** Under Notifications, tap **Send test alert**. The app plays the agent for one event, and a banner for "&lt;host&gt; · meshdeck-test" should arrive within a moment, decrypted on your phone. Tap it and the app opens on that host.
 
-**Deploy stackGuard.** Under **Agent**, tap **Deploy stackGuard**. meshDeck runs one small container on the host that watches the engine sockets of that domain — Docker's, Podman's, or both — **read-only**, with every Linux capability dropped and no inbound port. It never starts, stops or changes anything — the app does that over its own connection. Be clear-eyed about the grant: **anything that can talk to an engine socket can control the host**, so deploy it only on hosts you already trust meshDeck with. Once it is running the host reports in every couple of minutes, and real alerts start arriving; each says which engine it came from, and tapping it opens that environment.
+**Deploy stackGuard.** Under **Agent**, tap **Deploy stackGuard**. meshDeck runs one small container on the host that watches the engine sockets of that domain, Docker's, Podman's, or both, **read-only**, with every Linux capability dropped and no inbound port. It never starts, stops or changes anything, the app does that over its own connection. Be clear-eyed about the grant: **anything that can talk to an engine socket can control the host**, so deploy it only on hosts you already trust meshDeck with. Once it is running the host reports in every couple of minutes, and real alerts start arriving; each says which engine it came from, and tapping it opens that environment.
 
 ## Turning it off
 

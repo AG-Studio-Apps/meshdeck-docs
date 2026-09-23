@@ -1,12 +1,18 @@
 ---
 title: Adding a host
-lede: Connect to a Docker or Podman host over SSH, through Portainer, or with the command line.
+lede: Connect to a Docker or Podman host over your tailnet, over SSH, or through Portainer.
 ---
-Add a host from the empty Fleet screen (**Add host**), from the **+** menu (**Add host…**), or from the host switcher. The sheet is titled **Add Host**, and a control at the top called **Connect via** offers three ways in: **SSH**, **Portainer** and **Advanced**.
+Add a host from the empty Fleet screen (**Add host**), from the **+** menu (**Add host…**), or from the host switcher. meshDeck first asks **How will you connect?** and offers three paths, **Tailscale**, **SSH** and **Portainer**. Pick one and it shows that path's form.
+
+## Tailscale
+
+The simplest path when your host is on your tailnet: meshDeck reaches it over the app's built-in Tailscale and signs in with **Tailscale SSH**, so **no key is stored** and there is nothing to copy to the host, it just needs Tailscale SSH enabled. The Tailscale card appears once the built-in tailnet is connected (sign in under **Settings**).
+
+Give the host a name and its tailnet address and tap **Connect**. The Host section confirms it is **reached over your tailnet, Tailscale SSH, no key**.
 
 ## SSH
 
-SSH is the default. meshDeck opens an SSH session and runs `docker system dial-stdio` (or `podman system dial-stdio`), so it talks to the Engine API through the socket without exposing anything. Your SSH user needs the `docker` command and access to the Docker socket, or Podman — see [Podman hosts]({{ '/manual/podman/' | relative_url }}).
+Choose **SSH** to connect directly with a key or a password. meshDeck opens an SSH session and runs `docker system dial-stdio` (or `podman system dial-stdio`), so it talks to the Engine API through the socket without exposing anything. Your SSH user needs the `docker` command and access to the Docker socket, or Podman, see [Podman hosts]({{ '/manual/podman/' | relative_url }}).
 
 Once the host is added, meshDeck looks for the engines it runs and adds every one that is ready as an **environment** of the host; the rest are listed on the host's page with what to do first. A host with Docker and Podman shows both, and Fleet switches between them.
 
@@ -26,6 +32,8 @@ Then choose how to **Sign in with**.
 <li><strong>Password</strong>The password is stored in this phone's Keychain and sent only inside the encrypted SSH session.</li>
 </ol>
 
+For a host whose Docker socket the SSH user cannot reach, turn on **Advanced: docker CLI over SSH**, see [Advanced](#advanced) below.
+
 Tap **Connect**. The first time, you will be asked to verify the host's key (see [Trust prompts](#trust-prompts)).
 
 ## Portainer
@@ -40,11 +48,11 @@ Tap **Connect**. meshDeck lists the Docker environments on the server. If there 
 
 The server's certificate is pinned the first time you connect. If it is self-signed you will be asked to trust it.
 
-## Advanced (the command line)
+## Advanced
 
-**Advanced** runs the `docker` command over SSH instead of using the Engine API — or `podman`, if that is what the host has. Use it when the SSH user cannot reach the engine's socket directly. It has a few limits: statistics update about every two seconds, and a container whose settings cannot be expressed as `docker create` flags cannot be recreated from here.
+In the **SSH** path, turn on **Advanced: docker CLI over SSH** for hosts whose Docker socket the SSH user cannot reach. It runs the `docker` command over SSH instead of using the Engine API, or `podman`, if that is what the host has. It has a few limits: statistics update about every two seconds, and a container whose settings cannot be expressed as `docker create` flags cannot be recreated from here.
 
-Turn on **Run docker with sudo** if the command needs it, and choose where the sudo password comes from:
+Turn on sudo if the command needs it, and choose where the sudo password comes from:
 
 - **None.** Passwordless sudo.
 - **SSH password.** Reuse the password you signed in with (available only for password sign-in).

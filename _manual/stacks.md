@@ -2,7 +2,7 @@
 title: Stacks and templates
 lede: Create, redeploy and remove Compose stacks, from a compose file, a template or a Git repository.
 ---
-A **stack** is a Compose project — `docker compose` on a Docker environment, `podman compose` on a Podman one. meshDeck lists the stacks on a host under **STACKS** in Fleet and lets you create, redeploy, stop, start and remove them.
+A **stack** is a Compose project, `docker compose` on a Docker environment, `podman compose` on a Podman one. meshDeck lists the stacks on a host under **STACKS** in Fleet and lets you create, redeploy, stop, start and remove them.
 
 ## A stack's page
 
@@ -46,15 +46,15 @@ Choose **+ → New stack…** (or **Deploy → New stack…** on iPad).
 
 ## Templates
 
-**+ → Templates…** opens the gallery. It ships with a curated, versioned set — WordPress, Nextcloud, Jellyfin, Grafana, Pi-hole, Gitea, Vaultwarden and more, grouped by category — and pulls the latest from meshDeck (refresh from the gallery's toolbar). A deployed stack keeps the version it was made from.
+**+ → Templates…** opens the gallery. It ships with a curated, versioned set, WordPress, Nextcloud, Jellyfin, Grafana, Pi-hole, Gitea, Vaultwarden and more, grouped by category, and pulls the latest from meshDeck (refresh from the gallery's toolbar). A deployed stack keeps the version it was made from.
 
 The gallery has two tabs:
 
-- **Stacks** — single-app templates, grouped by category, with a **Featured** row at the top.
-- **Super Stacks** — curated multi-app projects, like a media suite or a monitoring stack. See [Super stacks]({{ '/manual/super-stacks/' | relative_url }}).
+- **Stacks**, single-app templates, grouped by category, with a **Featured** row at the top.
+- **Super Stacks**, curated multi-app projects, like a media suite or a monitoring stack. See [Super stacks]({{ '/manual/super-stacks/' | relative_url }}).
 
 On a Portainer host the gallery also shows that server's **App Templates** and **Custom templates**. Compose and Git templates deploy as stacks, container templates open **New container** pre-filled, and Swarm templates are greyed out because they are not supported.
 
 ## When something goes wrong
 
-The message says what happened, for example "docker compose is not available on this host", "git is not installed on this host", or "A vault secret used by this stack is missing". On a Podman environment the compose editor also lists, before you deploy, anything in the file that will not carry as written — see [Podman hosts]({{ '/manual/podman/' | relative_url }}). See [Troubleshooting]({{ '/manual/troubleshooting/' | relative_url }}).
+The message says what happened, for example "docker compose is not available on this host", "git is not installed on this host", or "A vault secret used by this stack is missing". On a Podman environment the compose editor also lists, before you deploy, anything in the file that will not carry as written, see [Podman hosts]({{ '/manual/podman/' | relative_url }}). See [Troubleshooting]({{ '/manual/troubleshooting/' | relative_url }}).

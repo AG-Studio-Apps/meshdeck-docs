@@ -22,7 +22,7 @@ These are the messages meshDeck shows, and the usual fix for each. If yours is n
 |---|---|
 | "docker is not installed on the host, or not on &lt;user&gt;'s PATH." | Install Docker or Podman, or make sure the SSH user's PATH includes it. |
 | "&lt;user&gt; cannot use the Docker socket. Add the user to the docker group, or turn on sudo." | Run `sudo usermod -aG docker <user>` and reconnect, or use **Advanced** with sudo. |
-| "&lt;user&gt; cannot use the root Podman socket. Turn on sudo, or use rootless Podman." | Grant passwordless sudo, or use the user's own Podman — see [Podman hosts]({{ '/manual/podman/' | relative_url }}). |
+| "&lt;user&gt; cannot use the root Podman socket. Turn on sudo, or use rootless Podman." | Grant passwordless sudo, or use the user's own Podman, see [Podman hosts]({{ '/manual/podman/' | relative_url }}). |
 | "Rootful Podman is root-only. Allow passwordless sudo for &lt;user&gt;…" | Add a `sudoers.d` line for the user, or add the host as root. |
 | "sudo asked for a password; passwordless sudo is required for docker." | Use the **Copy sudoers line** command, or choose a sudo password source. |
 | "sudo rejected the password." | Re-enter it under **Settings → Hosts** (the sudo button). |
