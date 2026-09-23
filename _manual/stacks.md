@@ -48,6 +48,8 @@ Choose **+ → New stack…** (or **Deploy → New stack…** on iPad).
 
 **+ → Templates…** opens the gallery. It ships with a curated, versioned set, WordPress, Nextcloud, Jellyfin, Grafana, Pi-hole, Gitea, Vaultwarden and more, grouped by category, and pulls the latest from meshDeck (refresh from the gallery's toolbar). A deployed stack keeps the version it was made from.
 
+<figure class="shot"><img src="{{ '/assets/img/shots/iphone-09-templates.webp' | relative_url }}" alt="The template gallery: single-app stacks grouped by category, with Super Stacks featured at the top and in their own tab" width="560" height="1217" loading="lazy"><figcaption>The template gallery: curated single-app stacks by category, with Super Stacks in their own tab.</figcaption></figure>
+
 The gallery has two tabs:
 
 - **Stacks**, single-app templates, grouped by category, with a **Featured** row at the top.

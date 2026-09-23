@@ -26,11 +26,31 @@ Root's socket is root-only; there is no group to join as there is for Docker. me
 
 ### Rootless Podman
 
-The SSH user's own Podman needs three things, and the host page lists whichever are missing, as commands you can copy:
+The SSH user's own Podman needs three things, and the host page lists whichever are missing, as commands you can copy.
 
-- the rootless prerequisites, `uidmap` and `slirp4netns` (or `pasta`); on Debian and Ubuntu, `sudo apt install -y uidmap slirp4netns passt`, on Fedora and RHEL, `sudo dnf install -y …`;
-- the user socket, `systemctl --user enable --now podman.socket`;
-- linger, so the socket outlives your login, `loginctl enable-linger $USER`.
+The rootless prerequisites are `uidmap` and `slirp4netns` (or `pasta`). On Debian and Ubuntu:
+
+```
+sudo apt install -y uidmap slirp4netns passt
+```
+
+On Fedora and RHEL:
+
+```
+sudo dnf install -y slirp4netns passt shadow-utils
+```
+
+Then enable the user socket:
+
+```
+systemctl --user enable --now podman.socket
+```
+
+And turn on linger, so the socket outlives your login:
+
+```
+loginctl enable-linger $USER
+```
 
 The package install is yours to run. The two user-level commands meshDeck can run for you over the SSH session, with your consent.
 

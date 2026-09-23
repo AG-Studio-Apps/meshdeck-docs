@@ -17,6 +17,8 @@ gallery has two tabs:
 | **Stacks** | Single-app templates, WordPress, Jellyfin, Grafana, Pi-hole and the rest, grouped by category. A **Featured** row spotlights a few picks at the top. |
 | **Super Stacks** | The curated multi-app projects, grouped by the same categories (Media, Monitoring and so on). |
 
+<figure class="shot"><img src="{{ '/assets/img/shots/iphone-09-templates.webp' | relative_url }}" alt="The template gallery: single-app stacks grouped by category, with Super Stacks featured at the top and in their own tab" width="560" height="1217" loading="lazy"><figcaption>Super Stacks are featured at the top of the gallery and in their own tab.</figcaption></figure>
+
 Templates are curated and versioned; a deployed stack keeps the version it was made from. Pull
 the latest set any time with the refresh button in the gallery's toolbar.
 
