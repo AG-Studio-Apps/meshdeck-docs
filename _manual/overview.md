@@ -42,16 +42,3 @@ Colour is never the only signal: every status also has its own icon.
 | **Stopped** | Grey | Created, paused, or exited cleanly. |
 
 Only **Down** and **Unhealthy** count as "needs attention" on the summary card.
-
-## Coming later
-
-meshDeck is actively developed. High on the list, in rough order:
-
-- **Light mode.** It is dark for now.
-- **Home Screen widgets and Siri Shortcuts.**
-- **Picking a host from your tailnet**, instead of typing each one in.
-- **Passphrase-protected SSH keys.** Ed25519 and ECDSA keys work today.
-- **Git stacks over SSH.** `https://` and `http://` URLs work today.
-- **More languages.** English for now.
-
-A few things stay out by design: no iCloud sync, so your hosts, drafts and settings live on the device; no Docker Swarm; and RSA SSH keys (Ed25519 and ECDSA are supported). Podman pods and Quadlets are not shown either, meshDeck works with containers, stacks and images. See [Podman hosts]({{ '/manual/podman/' | relative_url }}).
