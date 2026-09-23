@@ -8,7 +8,7 @@ Add a host from the empty Fleet screen (**Add host**), from the **+** menu (**Ad
 
 The simplest path when your host is on your tailnet: meshDeck reaches it over the app's built-in Tailscale. The Tailscale card appears once the built-in tailnet is connected (sign in under **Settings**).
 
-Give the host a name and its tailnet address, then choose how to **Sign in with**:
+Pick the host from **Pick from your tailnet** — the other devices on your tailnet, listed from the app's own node's view of it (online ones first; nothing is scanned, and the list never leaves the phone) — or type its tailnet address. A pick fills the address and, if you have not typed one, the name; both stay editable. Then choose how to **Sign in with**:
 
 - **Tailscale** — Tailscale SSH: passwordless, and **no key is stored** on the phone. The server must have Tailscale SSH enabled; run `sudo tailscale up --ssh` on it once, then tap **Connect**. The form shows the command with a copy button.
 - **New key**, **Import key** or **Password** — for a host that is on your tailnet but has *not* enabled Tailscale SSH. You still reach it over the tailnet; you just sign in with your own credential instead of passwordless. These work exactly as in the [SSH](#ssh) section below.
