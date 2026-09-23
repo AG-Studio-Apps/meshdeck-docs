@@ -33,7 +33,7 @@ Then choose how to **Sign in with**.
 <ol class="steps">
 <li><strong>Tailscale</strong>Offered when the address looks like a tailnet address (it ends in <code>.ts.net</code>, is a 100.64.0.0/10 address, or is a single-word MagicDNS name). No key is stored: your tailnet identity signs you in, provided the host has <strong>Tailscale SSH</strong> enabled.</li>
 <li><strong>New key</strong>meshDeck makes an Ed25519 key on this phone. The private half never leaves it. Tap <strong>Copy authorized_keys command</strong> and run it once on the host, then connect. The command creates <code>~/.ssh</code> if needed and appends the public key to <code>authorized_keys</code>. meshDeck cannot tell whether you ran it, so a mistake shows up when you connect.</li>
-<li><strong>Import key</strong>Paste an OpenSSH private key (<code>-----BEGIN OPENSSH PRIVATE KEY-----</code>), Ed25519 or ECDSA. Keys with a passphrase and RSA keys are not supported.</li>
+<li><strong>Import key</strong>Paste an OpenSSH private key (<code>-----BEGIN OPENSSH PRIVATE KEY-----</code>), Ed25519 or ECDSA. If the key has a passphrase, a <strong>Passphrase</strong> field appears: it is used once, to decrypt the key, and the key is kept decrypted in this phone's Keychain — the passphrase itself is never stored. Keys encrypted with <code>ssh-keygen</code>'s default (<code>aes256-ctr</code>) are accepted; for another cipher, re-save the key with <code>ssh-keygen -p -Z aes256-ctr -f &lt;key&gt;</code> and import it again. RSA keys are not supported.</li>
 <li><strong>Password</strong>The password is stored in this phone's Keychain and sent only inside the encrypted SSH session.</li>
 </ol>
 
