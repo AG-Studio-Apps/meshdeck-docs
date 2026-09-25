@@ -3,7 +3,10 @@
 # here, not on someone's host. A push tests only the templates it changed (the
 # catalog is large; pulling every image each push trips registry rate limits and
 # flakes). A manual run or the weekly schedule tests everything (catches upstream
-# image rot).
+# image rot). A second pass pins the OLDEST Compose meshDeck supports (Debian 13 stable's
+# 2.26.1) and deploys the templates that use `configs.content` for real, reading the mounted
+# file back — the only check that proves the floor, since `config -q` passes on versions
+# that fail and `up --dry-run` mounts nothing.
 name: Test stack templates
 on:
   push:
@@ -26,3 +29,20 @@ jobs:
         env:
           # push → only changed templates; manual/scheduled → everything
           TEST_ALL: ${{ github.event_name != 'push' && '1' || '' }}
+
+      # The runner's ambient Compose is far newer than the oldest one meshDeck promises to
+      # support, so the step above cannot catch a template that quietly raises the minimum.
+      # This one pins Debian 13 stable's version and proves the catalog still runs on it.
+      - name: Pin the Compose floor
+        run: |
+          curl -fsSL -o /usr/local/bin/docker-compose-floor \
+            "https://github.com/docker/compose/releases/download/v${FLOOR}/docker-compose-linux-x86_64"
+          chmod +x /usr/local/bin/docker-compose-floor
+          test "$(docker-compose-floor version --short)" = "$FLOOR"
+        env:
+          FLOOR: "2.26.1"
+
+      - name: Check the templates against the floor
+        run: python3 scripts/check-compose-floor.py
+        env:
+          COMPOSE_BIN: docker-compose-floor
