@@ -106,7 +106,8 @@ compose_warning_logs = false
 
 ### Rootless specifics
 
-- The provider runs as **you**, against your own socket (`$XDG_RUNTIME_DIR/podman/podman.sock`) — so a plugin under `~/.docker/cli-plugins/` counts, and a stack you deploy is yours, not root's.
+- The provider runs as **you**, against your own socket (`$XDG_RUNTIME_DIR/podman/podman.sock`), so a stack you deploy is yours, not root's.
+- Rootless constrains the engine, not the filesystem. A system-wide Compose at `/usr/libexec/docker/cli-plugins/docker-compose` is `root:root` but world-executable, so it works perfectly well rootless — you do not need your own copy. A plugin under `~/.docker/cli-plugins/` works too, and root can use that one as well.
 - Rootful and rootless are separate: a Compose installed for one is not automatically the provider for the other, and their stacks never mix.
 - The portability warnings in the compose editor still apply — a port below 1024 and `privileged: true` behave differently rootless.
 
