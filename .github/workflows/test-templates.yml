@@ -34,6 +34,9 @@ jobs:
       # support, so the step above cannot catch a template that quietly raises the minimum.
       # This one pins Debian 13 stable's version and proves the catalog still runs on it.
       - name: Pin the Compose floor
+        # Independent of the deploy sweep above: that step pulls ~60 images and can fail on
+        # a transient registry rate limit, which must not stop the floor from being checked.
+        if: always()
         run: |
           curl -fsSL -o /usr/local/bin/docker-compose-floor \
             "https://github.com/docker/compose/releases/download/v${FLOOR}/docker-compose-linux-x86_64"
@@ -43,6 +46,7 @@ jobs:
           FLOOR: "2.26.1"
 
       - name: Check the templates against the floor
+        if: always()
         run: python3 scripts/check-compose-floor.py
         env:
           COMPOSE_BIN: docker-compose-floor
