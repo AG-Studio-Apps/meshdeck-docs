@@ -3,8 +3,9 @@
 
 The floor is **Compose 2.26.1** — the version Debian 13 stable ships from its own repos.
 Ubuntu 24.04/26.04 ship 2.40, Fedora ships 5.5; Debian 12 ships 1.29.2 and needs Docker's
-repository. The binding feature is `configs:` with inline `content:`, used by three
-templates: Compose 2.23 rejects it outright and 2.24 is the first that really mounts it.
+repository. The binding feature is `configs:` with inline `content:`, used by a handful of
+templates (the run prints how many): Compose 2.23 rejects it outright and 2.24 is the first
+that really mounts it.
 
 Why this does a real deploy rather than a validation:
 

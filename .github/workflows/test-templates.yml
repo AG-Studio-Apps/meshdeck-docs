@@ -10,7 +10,7 @@
 name: Test stack templates
 on:
   push:
-    paths: ["templates.json", "scripts/test-templates.py"]
+    paths: ["templates.json", "scripts/test-templates.py", "scripts/check-compose-floor.py"]
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"  # Mondays 06:00 UTC — full sweep for image rot

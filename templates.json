@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "categories": [
     "Web & CMS",
     "Media",
@@ -356,57 +356,60 @@
       ]
     },
     {
-      "id": "minio",
-      "name": "MinIO",
+      "id": "seaweedfs",
+      "name": "SeaweedFS",
       "tagline": "S3-compatible object storage",
       "category": "Databases",
       "symbol": "externaldrive",
       "version": 1,
-      "compose": "services:\n  minio:\n    image: quay.io/minio/minio:latest\n    command: server /data --console-address \":9001\"\n    environment:\n      MINIO_ROOT_USER: ${ROOT_USER}\n      MINIO_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${API_PORT}:9000\"\n      - \"${CONSOLE_PORT}:9001\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
+      "compose": "services:\n  seaweedfs:\n    image: chrislusf/seaweedfs:latest\n    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=1024\n    configs:\n      - source: s3_config\n        target: /etc/seaweedfs/s3.json\n    ports:\n      - \"${S3_PORT}:8333\"\n      - \"127.0.0.1:${BROWSER_PORT}:8888\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nconfigs:\n  s3_config:\n    content: |\n      {\n        \"identities\": [\n          {\n            \"name\": \"${ACCESS_KEY}\",\n            \"credentials\": [\n              { \"accessKey\": \"${ACCESS_KEY}\", \"secretKey\": \"${SECRET_KEY}\" }\n            ],\n            \"actions\": [\"Admin\", \"Read\", \"Write\", \"List\", \"Tagging\"]\n          }\n        ]\n      }\nvolumes:\n  data:\n",
       "variables": [
         {
-          "key": "ROOT_USER",
-          "label": "Root user",
-          "defaultValue": "minioadmin",
+          "key": "ACCESS_KEY",
+          "label": "Access key",
+          "defaultValue": "meshdeck",
           "isSecret": false,
           "isPreset": false,
           "credential": {
             "field": "username",
-            "group": "minio",
+            "group": "seaweedfs",
             "tier": "applied",
-            "display": "MinIO console"
+            "display": "SeaweedFS S3"
           }
         },
         {
-          "key": "ROOT_PASSWORD",
-          "label": "Root password",
+          "key": "SECRET_KEY",
+          "label": "Secret key",
           "defaultValue": "",
           "isSecret": true,
           "isPreset": false,
           "credential": {
             "field": "password",
-            "group": "minio",
+            "group": "seaweedfs",
             "tier": "applied",
-            "display": "MinIO console"
+            "display": "SeaweedFS S3"
           }
         },
         {
-          "key": "API_PORT",
+          "key": "S3_PORT",
           "label": "S3 API port",
-          "defaultValue": "9000",
+          "defaultValue": "8333",
           "isSecret": false,
-          "isPreset": false
+          "isPreset": false,
+          "help": "Where S3 clients connect. The access key and secret guard it."
         },
         {
-          "key": "CONSOLE_PORT",
-          "label": "Console port",
-          "defaultValue": "9001",
+          "key": "BROWSER_PORT",
+          "label": "File browser port",
+          "defaultValue": "8888",
           "isSecret": false,
-          "isPreset": false
+          "isPreset": false,
+          "help": "Bound to localhost (no auth) — reached in-app."
         }
       ],
       "notes": [
-        "The console is on the console port; S3 clients use the API port."
+        "Point S3 clients at the S3 API port with the access key and secret. Set the region to us-east-1 and enable path-style addressing; buckets appear under /buckets in the file browser.",
+        "The file browser has no authentication and is bound to localhost, reached in-app. Do not publish that port."
       ]
     },
     {
