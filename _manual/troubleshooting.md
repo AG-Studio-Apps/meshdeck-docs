@@ -43,8 +43,8 @@ These are the messages meshDeck shows, and the usual fix for each. If yours is n
 
 | Message | Try |
 |---|---|
-| "… is not available on this host." | Install Compose v2 — `sudo apt install -y docker-compose-v2` on Ubuntu, `sudo dnf install -y docker-compose` on Fedora, Docker's own repository on Debian. Then reconnect the host. |
-| "Compose &lt;version&gt; on this host is too old." | meshDeck's stacks need **Compose 2.26 or newer**. The app already looked for a newer one on the host and found none, so install one with the command it shows, then reconnect. Note `apt install docker-compose` on Debian/Ubuntu gives Compose **1.29.2**, which is too old — the package you want is `docker-compose-v2`, or Docker's `docker-compose-plugin`. |
+| "… compose is not available on this host." | Install Compose 2.26+ and reconnect. See [Compose on Podman]({{ '/manual/podman/#compose-on-podman' | relative_url }}). |
+| "Compose &lt;version&gt; on this host is too old." | Stacks need Compose **2.26 or newer**; run the command shown, then reconnect. Do not install `docker-compose` on Debian/Ubuntu — that package is 1.29.2. |
 | "git is not installed on this host." | Install `git` on the host. |
 | "&lt;path&gt; is not readable by the SSH user." | Fix the file's permissions, or connect as the user that owns it. |
 | "A vault secret used by this stack is missing." | Add the secret again under **Settings → Vault**, or change the variable. |

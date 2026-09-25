@@ -60,10 +60,55 @@ If Podman and its prerequisites are there but the user socket is not, the enviro
 
 Everything you do on a Docker host: the fleet, stats, logs, the terminal, actions, the topology map, AI diagnosis, stacks and templates, the builder and systems, and instant alerts. A few things read differently on Podman:
 
-- **Compose.** `podman compose` is not an implementation: it hands your file to an external provider, which it finds by looking through `PATH` for `docker-compose` and then `podman-compose`. meshDeck's stacks need **Compose v2.26 or newer** — the version Debian 13 ships — so if the provider Podman picks is older, meshDeck looks for a better one already installed on the host (Docker's plugin usually sits at `/usr/libexec/docker/cli-plugins/`, which Podman never searches) and uses that instead, without asking you. This is common on hosts where `apt install docker-compose` was run at some point: that package is Compose 1.29.2 from 2021, and it wins the name lookup over a perfectly good newer one. If nothing on the host meets the floor, the stack list says which version it found and gives you the command to install a current Compose. `podman-compose` is not a substitute: it cannot run the commands meshDeck deploys with.
+- **Compose.** Stacks need Compose **2.26 or newer** on the host — see [Compose on Podman](#compose-on-podman) below.
 - **Portability.** Before you deploy, the compose editor lists what will not carry to this environment as written: a mount of the Docker socket (Podman's is `/run/podman/podman.sock`, or under `$XDG_RUNTIME_DIR` for a user), and, under rootless Podman, a published port below 1024 and `privileged: true`. They are warnings, not blocks.
 - **Topology on rootless Podman.** A rootless container reports no network attachments, so network links are not drawn for it; stacks, mounts and dependencies are.
 - **Advanced (the command line).** On a Podman-only host, **Connect** tries `docker version` and then `podman version`. Without sudo it talks to the user's own rootless Podman, and the environment is recorded as such.
+
+## Compose on Podman
+
+`podman compose` runs an external provider — it is a wrapper, not an implementation — and finds one by searching `PATH` for `docker-compose`, then `podman-compose`. meshDeck's stacks need **Compose 2.26 or newer**, the version Debian 13 ships.
+
+**Check what a host has:**
+
+```
+podman compose version --short
+```
+
+Podman prints the provider it chose to stderr, so to see which binary answered:
+
+```
+podman compose version 2>&1 >/dev/null | head -1
+```
+
+**Install one that qualifies:**
+
+| Host | Command |
+|---|---|
+| Ubuntu, Linux Mint, Pop!_OS | `sudo apt install -y docker-compose-v2` |
+| Fedora, RHEL family | `sudo dnf install -y docker-compose` |
+| Debian, Raspberry Pi OS | Docker's own repository — see [Docker's install docs](https://docs.docker.com/engine/install/debian/) |
+
+Reconnect the host afterwards; meshDeck checks the provider once per connection.
+
+**Do not install these:**
+
+- **`docker-compose` on Debian or Ubuntu.** That package is Compose **1.29.2**, from 2021. It is the most common cause of this problem: it takes the `docker-compose` name in `PATH`, so Podman prefers it over a newer Compose installed elsewhere on the same host. The package you want on Ubuntu is `docker-compose-v2`.
+- **`podman-compose`.** It cannot run the commands meshDeck deploys with, whatever its version.
+
+**If a newer Compose is already installed, meshDeck uses it.** Docker's plugin lives at `/usr/libexec/docker/cli-plugins/docker-compose`, which is not on `PATH`, so Podman ignores it — meshDeck finds it and points Podman at it for its own commands. Your own `podman compose` on that host still picks whatever `PATH` gives it; to change that for everything, set the provider in `~/.config/containers/containers.conf`:
+
+```toml
+[engine]
+compose_providers = ["/usr/libexec/docker/cli-plugins/docker-compose"]
+compose_warning_logs = false
+```
+
+### Rootless specifics
+
+- The provider runs as **you**, against your own socket (`$XDG_RUNTIME_DIR/podman/podman.sock`) — so a plugin under `~/.docker/cli-plugins/` counts, and a stack you deploy is yours, not root's.
+- Rootful and rootless are separate: a Compose installed for one is not automatically the provider for the other, and their stacks never mix.
+- The portability warnings in the compose editor still apply — a port below 1024 and `privileged: true` behave differently rootless.
 
 ## Alerts on a Podman host
 
