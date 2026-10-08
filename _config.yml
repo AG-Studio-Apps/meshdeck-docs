@@ -44,6 +44,7 @@ social:
 logo: /assets/img/icon-512.png
 
 exclude:
+  - scripts
   - Gemfile
   - Gemfile.lock
   - README.md
