@@ -10,8 +10,12 @@
 #                        key (scripts/sign-emergency.sh), already verified by the gates.
 #             sign       anything else: the sign job signs with the primary key.
 #   sign    environment `catalog-signing` (main only; required reviewer). Runs no third-party
-#           code and no repository script: download, compare, sign, verify, upload. Skipped
-#           in reuse mode.
+#           code and no repository script: check the environment still requires a reviewer,
+#           download, compare, sign, verify, upload. Skipped in reuse mode.
+#   verify  no secrets, no repository script: the Pages artifact about to be deployed (from
+#           sign, or from build in reuse mode) must hold this commit's templates.json and a
+#           signature that verifies against the pinned keys. The build job runs Jekyll and
+#           repository scripts, so nothing it uploads is deployed unchecked.
 #   deploy  actions/deploy-pages.
 #   smoke   fetches the live pair with a cache-busting query and verifies it again.
 #
@@ -31,8 +35,10 @@ on:
 
 permissions: {}
 
+# Only main's runs share the Pages group (a pending run is replaced by a newer one in the same
+# group, so a dispatch on another branch must not be able to cancel a pending main publish).
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('catalogue-pr-{0}', github.ref) || 'pages' }}
+  group: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && 'pages' || format('catalogue-{0}-{1}', github.event_name, github.ref) }}
   cancel-in-progress: false
 
 env:
@@ -89,7 +95,7 @@ jobs:
               for path in $changed; do
                 case "$path" in
                   scripts/fixtures/*.json) fixtures=$((fixtures + 1)) ;;
-                  *) echo "> - \`$path\`" ;;
+                  *) echo "> - \`$(printf '%s' "$path" | tr -c 'A-Za-z0-9._/@+=-' '?')\`" ;;
                 esac
               done
               if [ "$fixtures" -gt 0 ]; then echo "> - $fixtures fixture file(s) under \`scripts/fixtures/\`"; fi
@@ -185,10 +191,50 @@ jobs:
     environment: catalog-signing
     permissions:
       contents: read
+      actions: read
     env:
       MODE: ${{ needs.build.outputs.mode }}
       VERSION: ${{ needs.build.outputs.version }}
     steps:
+      # Fails closed when the environment no longer gates this job: with no required reviewer it
+      # runs unattended and would sign whatever reached main. A guard against a settings mistake
+      # (removing a reviewer, admin bypass, a wider branch policy). A push that edits this file can
+      # remove the guard too, which is why the reviewer reads the diff of any pipeline change.
+      - name: Check the environment still requires a reviewer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api() {
+            gh api "$1" 2>/dev/null \
+              || curl -fsS --max-time 20 -H 'Accept: application/vnd.github+json' "https://api.github.com/$1"
+          }
+          ENV_JSON=$(api "repos/$GITHUB_REPOSITORY/environments/catalog-signing")
+          POLICIES_JSON=$(api "repos/$GITHUB_REPOSITORY/environments/catalog-signing/deployment-branch-policies")
+          export ENV_JSON POLICIES_JSON
+          python3 - <<'PY'
+          import json, os, sys
+          env = json.loads(os.environ["ENV_JSON"])
+          policies = json.loads(os.environ["POLICIES_JSON"])
+          rules = [r for r in env.get("protection_rules") or [] if r.get("type") == "required_reviewers"]
+          reviewers = [who for rule in rules for who in rule.get("reviewers") or []]
+          problems = []
+          if not reviewers:
+              problems.append("has no required reviewer")
+          if env.get("can_admins_bypass") is not False:
+              problems.append("lets administrators bypass its protection rules")
+          names = sorted(f"{p.get('type')}:{p.get('name')}" for p in policies.get("branch_policies") or [])
+          if not (env.get("deployment_branch_policy") or {}).get("custom_branch_policies") or names != ["branch:main"]:
+              problems.append(f"does not limit deployments to main alone ({', '.join(names) or 'no branch policy'})")
+          for problem in problems:
+              print(f"::error::Refusing to sign: the catalog-signing environment {problem}. Fix it in Settings > Environments, then re-run.")
+          if problems:
+              sys.exit(1)
+          if not any(rule.get("prevent_self_review") for rule in rules):
+              print("::warning::catalog-signing does not prevent self-review (plan 4.2: a dedicated signer account, self-review prevented).")
+          print(f"catalog-signing: {len(reviewers)} required reviewer(s), administrators cannot bypass, main only.")
+          PY
+
       # Only the catalogue, a committed emergency signature and the public keys: no scripts.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -204,13 +250,37 @@ jobs:
           name: site-unsigned
           path: ${{ runner.temp }}/in
 
+      # The build job ran Jekyll and repository scripts, so its tarball is untrusted input here:
+      # regular files and directories only (upload-pages-artifact packs with tar --dereference,
+      # so a symlink would publish whatever it points at), unpacked outside the checkout.
       - name: Unpack and compare with the commit
         run: |
           set -euo pipefail
-          mkdir site
-          tar -C site -xf "$RUNNER_TEMP/in/site.tar"
-          cmp site/templates.json templates.json
-          body=$(python3 -c 'import json; v = json.load(open("templates.json"))["version"]; assert type(v) is int and v > 0; print(v)')
+          bad=$(tar -tvf "$RUNNER_TEMP/in/site.tar" | grep -v '^[-d]' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::the build artifact holds entries that are not regular files or directories"
+            printf '%s\n' "$bad" | head -20
+            exit 1
+          fi
+          site="$RUNNER_TEMP/site"
+          rm -rf "$site"
+          mkdir "$site"
+          tar -C "$site" --no-same-owner --no-same-permissions -xf "$RUNNER_TEMP/in/site.tar"
+          left=$(find "$site" ! -type f ! -type d | head -5)
+          [ -z "$left" ] || { echo "::error::unexpected entries after unpacking: $left"; exit 1; }
+          cmp "$site/templates.json" templates.json
+          body=$(python3 - <<'PY'
+          import json
+          def pairs(items):
+              keys = [key for key, _ in items]
+              if len(set(keys)) != len(keys):
+                  raise SystemExit("templates.json has a duplicate key")
+              return dict(items)
+          version = json.load(open("templates.json", encoding="utf-8"), object_pairs_hook=pairs)["version"]
+          assert type(version) is int and version > 0
+          print(version)
+          PY
+          )
           [ "$body" = "$VERSION" ] || { echo "::error::templates.json is version $body, the build said $VERSION"; exit 1; }
           case "$MODE" in sign|emergency) ;; *) echo "::error::unknown mode $MODE"; exit 1 ;; esac
 
@@ -234,7 +304,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f templates.json.minisig
-          cp templates.json.minisig site/templates.json.minisig
+          cp templates.json.minisig "$RUNNER_TEMP/site/templates.json.minisig"
 
       - name: Sign with the primary key
         if: env.MODE == 'sign'
@@ -251,13 +321,15 @@ jobs:
           key="$RUNNER_TEMP/catalog-primary.key"
           trap 'shred -u "$key" 2>/dev/null || rm -f "$key"' EXIT
           printf '%s\n' "$MINISIGN_KEY" > "$key"
-          rm -f site/templates.json.minisig
-          printf '%s\n' "$MINISIGN_PASSWORD" | minisign -S -s "$key" -m site/templates.json \
-            -x site/templates.json.minisig -t "catalog=templates version=$VERSION commit=$GITHUB_SHA" >/dev/null
+          site="$RUNNER_TEMP/site"
+          rm -f "$site/templates.json.minisig"
+          printf '%s\n' "$MINISIGN_PASSWORD" | minisign -S -s "$key" -m "$site/templates.json" \
+            -x "$site/templates.json.minisig" -t "catalog=templates version=$VERSION commit=$GITHUB_SHA" >/dev/null
 
       - name: Verify before publishing
         run: |
           set -euo pipefail
+          site="$RUNNER_TEMP/site"
           if [ "$MODE" = emergency ]; then
             pub=keys/catalog-emergency.pub
             want="trusted comment: catalog=templates version=$VERSION"
@@ -265,23 +337,115 @@ jobs:
             pub=keys/catalog-primary.pub
             want="trusted comment: catalog=templates version=$VERSION commit=$GITHUB_SHA"
           fi
-          minisign -V -q -p "$pub" -m site/templates.json -x site/templates.json.minisig
-          got=$(sed -n 3p site/templates.json.minisig)
+          minisign -V -q -p "$pub" -m "$site/templates.json" -x "$site/templates.json.minisig"
+          got=$(sed -n 3p "$site/templates.json.minisig")
           [ "$got" = "$want" ] || { echo "::error::trusted comment is '$got', expected '$want'"; exit 1; }
           echo "Verified against $pub: ${got#trusted comment: }" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload the Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: site
+          path: ${{ runner.temp }}/site
 
-  deploy:
-    name: Deploy to Pages
+  # The last gate before Pages, for every mode: in reuse mode the build job (which runs Jekyll and
+  # repository scripts) uploaded the Pages artifact itself, so this job, which runs neither, checks
+  # what is about to be deployed: this commit's templates.json, byte for byte, and a signature
+  # that verifies against the pinned keys with the trusted comment the mode calls for.
+  verify:
+    name: Check the Pages artifact
     needs: [build, sign]
     if: >-
       !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
       && needs.build.result == 'success'
       && (needs.sign.result == 'success' || (needs.sign.result == 'skipped' && needs.build.outputs.mode == 'reuse'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      MODE: ${{ needs.build.outputs.mode }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /templates.json
+            /keys/
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/pages
+
+      - name: Install minisign
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq minisign
+          minisign -v
+
+      - name: Check the public keys are the pinned ones
+        run: |
+          set -euo pipefail
+          for pair in "primary:$PRIMARY_KEY_ID" "emergency:$EMERGENCY_KEY_ID"; do
+            role=${pair%%:*}; want=${pair#*:}
+            got=$(python3 -c 'import base64, sys; b = base64.b64decode(open(sys.argv[1]).read().splitlines()[1]); assert len(b) == 42 and b[:2] == b"Ed"; print(b[2:10][::-1].hex().upper())' "keys/catalog-$role.pub")
+            [ "$got" = "$want" ] || { echo "::error::keys/catalog-$role.pub has key id $got, the workflow pins $want"; exit 1; }
+          done
+
+      - name: The artifact holds this commit's catalogue and a valid signature
+        run: |
+          set -euo pipefail
+          tarball="$RUNNER_TEMP/pages/artifact.tar"
+          bad=$(tar -tvf "$tarball" | grep -v '^[-d]' || true)
+          [ -z "$bad" ] || { echo "::error::the Pages artifact holds entries that are not regular files or directories"; exit 1; }
+          site="$RUNNER_TEMP/check"
+          rm -rf "$site"
+          mkdir "$site"
+          tar -C "$site" --no-same-owner --no-same-permissions -xf "$tarball"
+          cmp "$site/templates.json" templates.json
+          test -f "$site/templates.json.minisig" || { echo "::error::the Pages artifact has no templates.json.minisig"; exit 1; }
+          version=$(python3 - <<'PY'
+          import json
+          def pairs(items):
+              keys = [key for key, _ in items]
+              if len(set(keys)) != len(keys):
+                  raise SystemExit("templates.json has a duplicate key")
+              return dict(items)
+          version = json.load(open("templates.json", encoding="utf-8"), object_pairs_hook=pairs)["version"]
+          assert type(version) is int and version > 0
+          print(version)
+          PY
+          )
+          case "$MODE" in
+            sign)      roles="primary";           pattern="^catalog=templates version=$version commit=$GITHUB_SHA\$" ;;
+            emergency) roles="emergency";         pattern="^catalog=templates version=$version\$" ;;
+            reuse)     roles="primary emergency"; pattern="^catalog=templates version=$version( commit=[0-9a-f]{40})?\$" ;;
+            *) echo "::error::unknown mode $MODE"; exit 1 ;;
+          esac
+          line=$(sed -n 3p "$site/templates.json.minisig")
+          comment=${line#trusted comment: }
+          if [ "$line" = "$comment" ] || ! printf '%s\n' "$comment" | grep -Eq "$pattern"; then
+            echo "::error::trusted comment '$line' is not what $MODE mode publishes for version $version"
+            exit 1
+          fi
+          signer=""
+          for role in $roles; do
+            if minisign -V -q -p "keys/catalog-$role.pub" -m "$site/templates.json" -x "$site/templates.json.minisig" 2>/dev/null; then
+              signer=$role
+              break
+            fi
+          done
+          [ -n "$signer" ] || { echo "::error::templates.json.minisig does not verify against keys/catalog-{${roles// /,}}.pub"; exit 1; }
+          echo "Pages artifact checked: templates.json v$version ($MODE mode), signed by the $signer key: $comment" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to Pages
+    needs: verify
+    if: >-
+      !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+      && needs.verify.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment:
