@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "categories": [
     "Web & CMS",
     "Media",
@@ -7,7 +7,9 @@
     "Tools",
     "Home",
     "Databases",
-    "Downloads"
+    "Downloads",
+    "AI",
+    "Security"
   ],
   "templates": [
     {
@@ -241,7 +243,7 @@
       "tagline": "Web UI for SQL databases",
       "category": "Databases",
       "symbol": "tablecells",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  adminer:\n    image: adminer:4\n    ports:\n      - \"${PORT}:8080\"\n    restart: unless-stopped\n",
       "variables": [
         {
@@ -253,7 +255,7 @@
         }
       ],
       "notes": [
-        "A lightweight UI that connects to an existing database — enter the DB host, user and password when you open it."
+        "A lightweight UI that connects to an existing database. Enter the DB host, user and password when you open it."
       ]
     },
     {
@@ -307,11 +309,11 @@
       "tagline": "Message broker with management UI",
       "category": "Databases",
       "symbol": "arrow.left.arrow.right",
-      "version": 1,
-      "compose": "services:\n  rabbitmq:\n    image: rabbitmq:3-management\n    environment:\n      RABBITMQ_DEFAULT_USER: ${USER}\n      RABBITMQ_DEFAULT_PASS: ${PASSWORD}\n    ports:\n      - \"${MGMT_PORT}:15672\"\n      - \"${AMQP_PORT}:5672\"\n    volumes:\n      - data:/var/lib/rabbitmq\n    restart: unless-stopped\nvolumes:\n  data:\n",
+      "version": 2,
+      "compose": "services:\n  rabbitmq:\n    image: rabbitmq:3-management\n    environment:\n      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}\n      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}\n    ports:\n      - \"${MGMT_PORT}:15672\"\n      - \"${AMQP_PORT}:5672\"\n    volumes:\n      - data:/var/lib/rabbitmq\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
-          "key": "USER",
+          "key": "RABBITMQ_USER",
           "label": "User",
           "defaultValue": "guest",
           "isSecret": false,
@@ -324,7 +326,7 @@
           }
         },
         {
-          "key": "PASSWORD",
+          "key": "RABBITMQ_PASSWORD",
           "label": "Password",
           "defaultValue": "",
           "isSecret": true,
@@ -361,13 +363,13 @@
       "tagline": "S3-compatible object storage",
       "category": "Databases",
       "symbol": "externaldrive",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  seaweedfs:\n    image: chrislusf/seaweedfs:latest\n    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=1024\n    configs:\n      - source: s3_config\n        target: /etc/seaweedfs/s3.json\n    ports:\n      - \"${S3_PORT}:8333\"\n      - \"127.0.0.1:${BROWSER_PORT}:8888\"\n    volumes:\n      - data:/data\n    restart: unless-stopped\nconfigs:\n  s3_config:\n    content: |\n      {\n        \"identities\": [\n          {\n            \"name\": \"${ACCESS_KEY}\",\n            \"credentials\": [\n              { \"accessKey\": \"${ACCESS_KEY}\", \"secretKey\": \"${SECRET_KEY}\" }\n            ],\n            \"actions\": [\"Admin\", \"Read\", \"Write\", \"List\", \"Tagging\"]\n          }\n        ]\n      }\nvolumes:\n  data:\n",
       "variables": [
         {
           "key": "ACCESS_KEY",
           "label": "Access key",
-          "defaultValue": "meshdeck",
+          "defaultValue": "admin",
           "isSecret": false,
           "isPreset": false,
           "credential": {
@@ -404,7 +406,7 @@
           "defaultValue": "8888",
           "isSecret": false,
           "isPreset": false,
-          "help": "Bound to localhost (no auth) — reached in-app."
+          "help": "Bound to localhost (no auth): reached in-app."
         }
       ],
       "notes": [
@@ -885,7 +887,7 @@
       "tagline": "Container management UI",
       "category": "Monitoring",
       "symbol": "square.grid.2x2",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  portainer:\n    image: portainer/portainer-ce:latest\n    ports:\n      - \"${PORT}:9000\"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n      - data:/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
@@ -897,7 +899,7 @@
         }
       ],
       "notes": [
-        "Mounts the Docker socket read-write to manage this host — grant it deliberately."
+        "Mounts the Docker socket read-write to manage this host. Grant it deliberately."
       ]
     },
     {
@@ -1068,7 +1070,7 @@
       "tagline": "Documentation and knowledge base",
       "category": "Web & CMS",
       "symbol": "globe",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: mariadb:11\n    environment:\n      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n      MYSQL_DATABASE: bookstack\n      MYSQL_USER: bookstack\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n    healthcheck:\n      test: [\"CMD\", \"healthcheck.sh\", \"--connect\", \"--innodb_initialized\"]\n      interval: 5s\n      retries: 25\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  bookstack:\n    image: lscr.io/linuxserver/bookstack:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n      APP_URL: http://localhost:${PORT}\n      DB_HOST: db\n      DB_PORT: \"3306\"\n      DB_USER: bookstack\n      DB_PASS: ${DB_PASSWORD}\n      DB_DATABASE: bookstack\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  db:\n  config:\n",
       "variables": [
         {
@@ -1094,7 +1096,7 @@
         }
       ],
       "notes": [
-        "Default login is admin@admin.com / password on first start — change it immediately."
+        "Default login is admin@admin.com / password on first start. Change it immediately."
       ]
     },
     {
@@ -1354,7 +1356,7 @@
       "tagline": "Jellyfin + Sonarr/Radarr/Lidarr + Prowlarr + qBittorrent (VPN) + SABnzbd + Jellyseerr",
       "category": "Media",
       "symbol": "play.rectangle.on.rectangle",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: openvpn\n      OPENVPN_USER: ${OPENVPN_USER}\n      OPENVPN_PASSWORD: ${OPENVPN_PASSWORD}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
       "variables": [
         {
@@ -1483,7 +1485,7 @@
         }
       ],
       "notes": [
-        "qBittorrent has network ONLY through the VPN (killswitch) — it stays down until Gluetun connects, so it waits for a healthy VPN.",
+        "qBittorrent has network ONLY through the VPN (killswitch): it stays down until Gluetun connects, so it waits for a healthy VPN.",
         "The provider must support OpenVPN in Gluetun: NordVPN, PIA, Windscribe, Surfshark, ProtonVPN. Mullvad is WireGuard-only.",
         "DATA_PATH is one folder holding downloads and media (e.g. /srv/media) so Sonarr/Radarr hardlink imports instead of copying.",
         "After it's up: in each *arr app add the download client qBittorrent at host 'gluetun' port 8080 and SABnzbd at 'sabnzbd:8080'; add Prowlarr as the indexer; point Jellyseerr at Jellyfin.",
@@ -1494,10 +1496,10 @@
     {
       "id": "observability",
       "name": "Observability",
-      "tagline": "Prometheus, Grafana, Alertmanager and host/container metrics — a monitoring stack wired to graph on first open.",
+      "tagline": "Prometheus, Grafana, Alertmanager and host/container metrics: a monitoring stack wired to graph on first open.",
       "category": "Monitoring",
       "symbol": "chart.line.uptrend.xyaxis",
-      "version": 1,
+      "version": 2,
       "compose": "configs:\n  prometheus_yml:\n    content: |\n      global:\n        scrape_interval: ${SCRAPE_INTERVAL:-15s}\n      alerting:\n        alertmanagers:\n          - static_configs: [{ targets: ['alertmanager:9093'] }]\n      scrape_configs:\n        - job_name: prometheus\n          static_configs: [{ targets: ['localhost:9090'] }]\n        - job_name: node\n          static_configs: [{ targets: ['node-exporter:9100'] }]\n        - job_name: cadvisor\n          static_configs: [{ targets: ['cadvisor:8080'] }]\n        - job_name: alertmanager\n          static_configs: [{ targets: ['alertmanager:9093'] }]\n  alertmanager_yml:\n    content: |\n      route:\n        receiver: 'null'\n      receivers:\n        - name: 'null'\n  grafana_ds:\n    content: |\n      apiVersion: 1\n      datasources:\n        - name: Prometheus\n          type: prometheus\n          access: proxy\n          url: http://prometheus:9090\n          isDefault: true\nservices:\n  prometheus:\n    image: prom/prometheus:v3.1.0\n    command:\n      - '--config.file=/etc/prometheus/prometheus.yml'\n      - '--storage.tsdb.path=/prometheus'\n      - '--storage.tsdb.retention.time=${PROM_RETENTION:-15d}'\n    configs:\n      - source: prometheus_yml\n        target: /etc/prometheus/prometheus.yml\n    ports: ['127.0.0.1:${PROM_PORT:-9090}:9090']\n    volumes: [prometheus_data:/prometheus]\n    restart: unless-stopped\n    networks: [monitoring]\n  alertmanager:\n    image: prom/alertmanager:v0.28.0\n    configs:\n      - source: alertmanager_yml\n        target: /etc/alertmanager/alertmanager.yml\n    ports: ['127.0.0.1:${ALERT_PORT:-9093}:9093']\n    volumes: [alertmanager_data:/alertmanager]\n    restart: unless-stopped\n    networks: [monitoring]\n  node-exporter:\n    image: prom/node-exporter:v1.8.2\n    command:\n      - '--path.procfs=/host/proc'\n      - '--path.sysfs=/host/sys'\n      - '--path.rootfs=/rootfs'\n      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'\n    volumes:\n      - /proc:/host/proc:ro\n      - /sys:/host/sys:ro\n      - /:/rootfs:ro\n    restart: unless-stopped\n    networks: [monitoring]\n  cadvisor:\n    image: gcr.io/cadvisor/cadvisor:v0.49.1\n    privileged: true\n    devices: ['/dev/kmsg']\n    volumes:\n      - /:/rootfs:ro\n      - /var/run:/var/run:ro\n      - /sys:/sys:ro\n      - /var/lib/docker/:/var/lib/docker:ro\n      - /dev/disk/:/dev/disk:ro\n    restart: unless-stopped\n    networks: [monitoring]\n  grafana:\n    image: grafana/grafana:11.4.0\n    environment:\n      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}\n      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}\n      GF_USERS_ALLOW_SIGN_UP: \"false\"\n    configs:\n      - source: grafana_ds\n        target: /etc/grafana/provisioning/datasources/prometheus.yml\n    ports: ['${GRAFANA_PORT:-3000}:3000']\n    volumes: [grafana_data:/var/lib/grafana]\n    depends_on: [prometheus]\n    restart: unless-stopped\n    networks: [monitoring]\nnetworks: { monitoring: {} }\nvolumes: { prometheus_data: {}, alertmanager_data: {}, grafana_data: {} }\n",
       "superStack": true,
       "variables": [
@@ -1515,7 +1517,7 @@
           "defaultValue": "9090",
           "isSecret": false,
           "isPreset": false,
-          "help": "Prometheus, bound to localhost only (no built-in auth) — reach it via meshDeck."
+          "help": "Prometheus, bound to localhost only (no built-in auth): reach it in the app over port forwarding."
         },
         {
           "key": "ALERT_PORT",
@@ -1523,7 +1525,7 @@
           "defaultValue": "9093",
           "isSecret": false,
           "isPreset": false,
-          "help": "Alertmanager, bound to localhost only — reach it via meshDeck."
+          "help": "Alertmanager, bound to localhost only: reach it in the app over port forwarding."
         },
         {
           "key": "SCRAPE_INTERVAL",
@@ -1571,20 +1573,20 @@
         }
       ],
       "notes": [
-        "Grafana is the dashboard (password-gated). Prometheus and Alertmanager have no built-in auth, so they bind to localhost on the host and are reached through meshDeck's forwarding — not a public port.",
-        "cAdvisor runs privileged with read-only host root, disk and Docker access; node-exporter reads the whole host filesystem read-only. That is host-level visibility — deploy only on a host you trust meshDeck with.",
-        "The Grafana admin password is set on first launch and kept in your vault. If you change it inside Grafana, update it in meshDeck too: a redeploy will not reset it while the Grafana data volume persists.",
-        "Grafana opens with the Prometheus datasource already wired. Import a dashboard to start graphing — e.g. Grafana.com ID 1860 (node-exporter) and 14282 (cAdvisor).",
+        "Grafana is the dashboard (password-gated). Prometheus and Alertmanager have no built-in auth, so they bind to localhost on the host and are reached in the app over port forwarding, not on a public port.",
+        "cAdvisor runs privileged with read-only host root, disk and Docker access; node-exporter reads the whole host filesystem read-only. That is host-level visibility: deploy only on a host you trust with this access.",
+        "The Grafana admin password is set on first launch and kept in your vault. If you change it inside Grafana, update it in the app's Vault too: a redeploy will not reset it while the Grafana data volume persists.",
+        "Grafana opens with the Prometheus datasource already wired. Import a dashboard to start graphing, e.g. Grafana.com ID 1860 (node-exporter) and 14282 (cAdvisor).",
         "Ports: Grafana ${GRAFANA_PORT}; Prometheus ${PROM_PORT} and Alertmanager ${ALERT_PORT} on localhost only."
       ]
     },
     {
       "id": "smart-home",
       "name": "Smart Home",
-      "tagline": "Home Assistant, Mosquitto (MQTT) and Node-RED — a smart-home core wired to run together.",
+      "tagline": "Home Assistant, Mosquitto (MQTT) and Node-RED: a smart-home core wired to run together.",
       "category": "Home",
       "symbol": "house",
-      "version": 1,
+      "version": 2,
       "compose": "configs:\n  mosquitto_conf:\n    content: |\n      listener 1883\n      allow_anonymous true\n      persistence true\n      persistence_location /mosquitto/data/\nservices:\n  homeassistant:\n    image: ghcr.io/home-assistant/home-assistant:${HA_VERSION:-2026.9}\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ha_config:/config\n      - /etc/localtime:/etc/localtime:ro\n    ports: ['${HA_PORT:-8123}:8123']\n    restart: unless-stopped\n    networks: [smarthome]\n  mosquitto:\n    image: eclipse-mosquitto:2.0\n    configs:\n      - source: mosquitto_conf\n        target: /mosquitto/config/mosquitto.conf\n    volumes:\n      - mosquitto_data:/mosquitto/data\n    ports: ['127.0.0.1:${MQTT_PORT:-1883}:1883']\n    restart: unless-stopped\n    networks: [smarthome]\n  nodered:\n    image: nodered/node-red:4.0\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - nodered_data:/data\n    ports: ['127.0.0.1:${NODERED_PORT:-1880}:1880']\n    depends_on: [mosquitto]\n    restart: unless-stopped\n    networks: [smarthome]\nnetworks: { smarthome: {} }\nvolumes: { ha_config: {}, mosquitto_data: {}, nodered_data: {} }\n",
       "superStack": true,
       "variables": [
@@ -1602,7 +1604,7 @@
           "defaultValue": "1883",
           "isSecret": false,
           "isPreset": false,
-          "help": "Mosquitto broker, bound to localhost — reached in-app, not on the LAN."
+          "help": "Mosquitto broker, bound to localhost: reached in-app, not on the LAN."
         },
         {
           "key": "NODERED_PORT",
@@ -1610,7 +1612,7 @@
           "defaultValue": "1880",
           "isSecret": false,
           "isPreset": false,
-          "help": "Node-RED editor, bound to localhost (it has no password) — reached in-app."
+          "help": "Node-RED editor, bound to localhost (it has no password): reached in-app."
         },
         {
           "key": "TZ",
@@ -1618,24 +1620,31 @@
           "defaultValue": "Etc/UTC",
           "isSecret": false,
           "isPreset": false
+        },
+        {
+          "key": "HA_VERSION",
+          "label": "Home Assistant version",
+          "defaultValue": "2026.9",
+          "isSecret": false,
+          "isPreset": true
         }
       ],
       "notes": [
-        "Home Assistant is published on its port on every interface, and the first person to open it claims the admin account — finish onboarding promptly.",
-        "Mosquitto (the MQTT broker) and Node-RED's flow editor are bound to localhost and reached in-app through meshDeck. Node-RED has no password by default, so don't put it on the LAN; the broker allows anonymous clients.",
+        "Home Assistant is published on its port on every interface, and the first person to open it claims the admin account, so finish onboarding promptly.",
+        "Mosquitto (the MQTT broker) and Node-RED's flow editor are bound to localhost and reached in the app. Node-RED has no password by default, so don't put it on the LAN; the broker allows anonymous clients.",
         "In Home Assistant, add the MQTT integration pointing at host 'mosquitto', port 1883, with no username or password.",
-        "On a bridge network Home Assistant can't auto-discover LAN devices (mDNS/SSDP) — add integrations manually by IP.",
+        "On a bridge network Home Assistant can't auto-discover LAN devices (mDNS/SSDP), so add integrations manually by IP.",
         "For Node-RED to control Home Assistant, install the Home Assistant WebSocket palette and use a long-lived access token from your HA profile.",
-        "Adding Zigbee or Z-Wave needs a USB radio plugged into the host (Zigbee2MQTT) — a per-host add-on, not included here."
+        "Adding Zigbee or Z-Wave needs a USB radio plugged into the host (Zigbee2MQTT): a per-host add-on, not included here."
       ]
     },
     {
       "id": "media-stack-wg",
       "name": "Media (WireGuard VPN)",
-      "tagline": "The media suite with a WireGuard VPN killswitch — for Mullvad and other WireGuard providers.",
+      "tagline": "The media suite with a WireGuard VPN killswitch, for Mullvad and other WireGuard providers.",
       "category": "Media",
       "symbol": "play.rectangle.on.rectangle",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: wireguard\n      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY}\n      WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
       "superStack": true,
       "variables": [
@@ -1765,7 +1774,7 @@
         }
       ],
       "notes": [
-        "qBittorrent has network ONLY through the VPN (killswitch) — it stays down until Gluetun connects, so it waits for a healthy VPN.",
+        "qBittorrent has network ONLY through the VPN (killswitch): it stays down until Gluetun connects, so it waits for a healthy VPN.",
         "The provider must support WireGuard in gluetun: Mullvad, NordVPN, Surfshark, Windscribe, ProtonVPN, IVPN, AirVPN. Get your WireGuard private key and address from the provider's config.",
         "DATA_PATH is one folder holding downloads and media (e.g. /srv/media) so Sonarr/Radarr hardlink imports instead of copying.",
         "After it's up: in each *arr app add the download client qBittorrent at host 'gluetun' port 8080 and SABnzbd at 'sabnzbd:8080'; add Prowlarr as the indexer; point Jellyseerr at Jellyfin.",
@@ -1775,10 +1784,10 @@
     {
       "id": "immich",
       "name": "Personal Cloud (Immich)",
-      "tagline": "Immich photo & video library with its ML, database and cache — your own Google Photos.",
+      "tagline": "Immich photo & video library with its ML, database and cache: your own Google Photos.",
       "category": "Home",
       "symbol": "photo.stack",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  immich-server:\n    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-v3.2.2}\n    environment:\n      DB_HOSTNAME: database\n      DB_USERNAME: postgres\n      DB_PASSWORD: ${DB_PASSWORD}\n      DB_DATABASE_NAME: immich\n      REDIS_HOSTNAME: redis\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ${UPLOAD_LOCATION}:/data\n      - /etc/localtime:/etc/localtime:ro\n    ports: ['${IMMICH_PORT:-2283}:2283']\n    depends_on:\n      redis: { condition: service_healthy }\n      database: { condition: service_healthy }\n    restart: unless-stopped\n  immich-machine-learning:\n    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-v3.2.2}\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - model-cache:/cache\n    restart: unless-stopped\n  redis:\n    image: docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf\n    healthcheck:\n      test: redis-cli ping | grep -q PONG || exit 1\n    restart: unless-stopped\n  database:\n    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23\n    environment:\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n      POSTGRES_USER: postgres\n      POSTGRES_DB: immich\n      POSTGRES_INITDB_ARGS: '--data-checksums'\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    shm_size: 128mb\n    healthcheck:\n      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']\n      interval: 10s\n      timeout: 5s\n      retries: 12\n      start_period: 30s\n    restart: unless-stopped\nvolumes:\n  model-cache: {}\n  pgdata: {}\n",
       "superStack": true,
       "variables": [
@@ -1806,6 +1815,13 @@
           "isPreset": false
         },
         {
+          "key": "IMMICH_VERSION",
+          "label": "Immich version",
+          "defaultValue": "v3.2.2",
+          "isSecret": false,
+          "isPreset": true
+        },
+        {
           "key": "DB_PASSWORD",
           "label": "Database password",
           "defaultValue": "",
@@ -1818,9 +1834,9 @@
         }
       ],
       "notes": [
-        "The Immich web UI is published on its port on every interface, and the first person to open it claims the admin account — complete setup promptly.",
+        "The Immich web UI is published on its port on every interface, and the first person to open it claims the admin account, so complete setup promptly.",
         "Immich runs as root, so the library folder gets root-owned subfolders. Use a dedicated folder (not an existing one); managing or backing it up may need sudo.",
-        "The database password is generated and kept in your vault. Don't change it on a redeploy — the existing database keeps the original password while its volume persists.",
+        "The database password is generated and kept in your vault. Don't change it on a redeploy: the existing database keeps the original password while its volume persists.",
         "Photos live in your library folder; the database lives in a Docker named volume. Back the database up with Immich's built-in backups or pg_dump, not a file copy.",
         "Machine learning (smart search, face recognition) pulls a ~1 GB image and downloads models on first use. It's optional to the core library; leave it running for search."
       ]
@@ -1828,10 +1844,10 @@
     {
       "id": "localai",
       "name": "Local AI",
-      "tagline": "Ollama + Open WebUI — run open LLMs locally with a private ChatGPT-style interface.",
+      "tagline": "Ollama + Open WebUI: run open LLMs locally with a private ChatGPT-style interface.",
       "category": "AI",
       "symbol": "brain",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  ollama:\n    image: ollama/ollama:0.34.2\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - ollama:/root/.ollama\n    ports: ['127.0.0.1:${OLLAMA_PORT:-11434}:11434']\n    healthcheck:\n      test: ['CMD-SHELL', 'ollama list >/dev/null 2>&1 || exit 1']\n      interval: 30s\n      timeout: 5s\n      retries: 5\n      start_period: 20s\n    restart: unless-stopped\n    networks: [localai]\n  open-webui:\n    image: ghcr.io/open-webui/open-webui:v0.11.3\n    environment:\n      OLLAMA_BASE_URL: http://ollama:11434\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - open-webui:/app/backend/data\n    ports: ['${WEBUI_PORT:-3000}:8080']\n    depends_on: [ollama]\n    restart: unless-stopped\n    networks: [localai]\nnetworks: { localai: {} }\nvolumes: { ollama: {}, open-webui: {} }\n",
       "superStack": true,
       "variables": [
@@ -1849,7 +1865,7 @@
           "defaultValue": "11434",
           "isSecret": false,
           "isPreset": false,
-          "help": "The Ollama API, bound to localhost — reached in-app, never on the LAN."
+          "help": "The Ollama API, bound to localhost: reached in-app, never on the LAN."
         },
         {
           "key": "TZ",
@@ -1860,12 +1876,12 @@
         }
       ],
       "notes": [
-        "No model is included. After it's up, open Open WebUI and pull one — e.g. llama3.2, qwen2.5 or phi3 — from the model menu.",
-        "The first person to sign up to Open WebUI becomes the admin, with full control (an admin can run code in the container and drive the model). Sign up immediately, then turn off new sign-ups (Admin → Settings). It's safest reached in-app over meshDeck rather than a public port.",
-        "Ollama's API has no authentication, so it's bound to localhost only and reached in-app — never put it on your LAN.",
-        "Models are large: a 7B model is about 4–5 GB, and they share the host's main disk, so pulling several can fill it. Remove models you don't use (in Open WebUI, or 'ollama rm').",
+        "No model is included. After it's up, open Open WebUI and pull one (e.g. llama3.2, qwen2.5 or phi3) from the model menu.",
+        "The first person to sign up to Open WebUI becomes the admin, with full control (an admin can run code in the container and drive the model). Sign up immediately, then turn off new sign-ups (Admin → Settings). It's safest reached in-app rather than on a public port.",
+        "Ollama's API has no authentication, so it's bound to localhost only and reached in-app. Never put it on your LAN.",
+        "Models are large: a 7B model is about 4 to 5 GB, and they share the host's main disk, so pulling several can fill it. Remove models you don't use (in Open WebUI, or 'ollama rm').",
         "It runs on CPU by default, so it works on any host (just slower). A 7B model wants roughly 8 GB of free RAM. For an NVIDIA GPU, add a device reservation and the NVIDIA container toolkit.",
-        "First launch downloads a small embedding model for search — give it a minute on first boot."
+        "First launch downloads a small embedding model for search, so give it a minute on first boot."
       ]
     },
     {
@@ -1873,8 +1889,8 @@
       "name": "Home Ops",
       "category": "Monitoring",
       "symbol": "waveform.path.ecg",
-      "tagline": "Uptime Kuma + Dozzle + Beszel — a lightweight monitoring toolkit for a home server.",
-      "version": 1,
+      "tagline": "Uptime Kuma + Dozzle + Beszel: a lightweight monitoring toolkit for a home server.",
+      "version": 2,
       "compose": "services:\n  uptime-kuma:\n    image: louislam/uptime-kuma:2.5.5\n    volumes:\n      - uptime-kuma:/app/data\n    ports: ['${UPTIME_PORT:-3001}:3001']\n    restart: unless-stopped\n    networks: [homeops]\n  dozzle:\n    image: amir20/dozzle:v11.1.1\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock:ro\n    ports: ['127.0.0.1:${DOZZLE_PORT:-8081}:8080']\n    restart: unless-stopped\n    networks: [homeops]\n  beszel:\n    image: henrygd/beszel:0.20.0\n    volumes:\n      - beszel:/beszel_data\n    ports: ['${BESZEL_PORT:-8090}:8090']\n    restart: unless-stopped\n    networks: [homeops]\nnetworks: { homeops: {} }\nvolumes: { uptime-kuma: {}, beszel: {} }\n",
       "superStack": true,
       "variables": [
@@ -1900,14 +1916,14 @@
           "defaultValue": "8081",
           "isSecret": false,
           "isPreset": false,
-          "help": "Dozzle log viewer, bound to localhost — reached in-app."
+          "help": "Dozzle log viewer, bound to localhost: reached in-app."
         }
       ],
       "notes": [
         "A toolkit of three independent tools deployed together (they don't wire into each other): Uptime Kuma (uptime + status pages), Dozzle (live container logs), Beszel (host/container metrics).",
-        "Uptime Kuma and Beszel are published on every interface and each makes the first person who signs up the admin — create your account immediately after deploy.",
+        "Uptime Kuma and Beszel are published on every interface and each makes the first person who signs up the admin, so create your account immediately after deploy.",
         "Dozzle reads the Docker socket (read-only): it can see every container's logs and environment, including secrets. It's bound to localhost and reached in-app, not on your LAN.",
-        "Beszel starts with an empty dashboard. To see metrics, open Beszel → Add System, copy the key/command it shows, then run the Beszel agent (image henrygd/beszel-agent, port 45876) on the host to monitor with that KEY — it then appears in the hub."
+        "Beszel starts with an empty dashboard. To see metrics, open Beszel → Add System, copy the key/command it shows, then run the Beszel agent (image henrygd/beszel-agent, port 45876) on the host to monitor with that KEY; it then appears in the hub."
       ]
     },
     {
@@ -1915,8 +1931,8 @@
       "name": "Authentik (SSO)",
       "category": "Security",
       "symbol": "person.badge.key",
-      "tagline": "A self-hosted single sign-on identity provider — OAuth2/OIDC, SAML and proxy auth for your apps.",
-      "version": 1,
+      "tagline": "A self-hosted single sign-on identity provider: OAuth2/OIDC, SAML and proxy auth for your apps.",
+      "version": 2,
       "compose": "services:\n  postgresql:\n    image: docker.io/library/postgres:16-alpine\n    environment:\n      POSTGRES_DB: authentik\n      POSTGRES_USER: authentik\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    volumes:\n      - database:/var/lib/postgresql/data\n    healthcheck:\n      test: ['CMD-SHELL', 'pg_isready -d authentik -U authentik']\n      interval: 30s\n      timeout: 5s\n      retries: 5\n      start_period: 20s\n    restart: unless-stopped\n    networks: [authentik]\n  server:\n    image: ghcr.io/goauthentik/server:2026.8.3\n    command: server\n    environment:\n      AUTHENTIK_POSTGRESQL__HOST: postgresql\n      AUTHENTIK_POSTGRESQL__NAME: authentik\n      AUTHENTIK_POSTGRESQL__USER: authentik\n      AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}\n      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}\n      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}\n      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@example.com}\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n      - templates:/templates\n    ports: ['${AUTHENTIK_PORT:-9000}:9000']\n    depends_on:\n      postgresql: { condition: service_healthy }\n    shm_size: 512mb\n    restart: unless-stopped\n    networks: [authentik]\n  worker:\n    image: ghcr.io/goauthentik/server:2026.8.3\n    command: worker\n    environment:\n      AUTHENTIK_POSTGRESQL__HOST: postgresql\n      AUTHENTIK_POSTGRESQL__NAME: authentik\n      AUTHENTIK_POSTGRESQL__USER: authentik\n      AUTHENTIK_POSTGRESQL__PASSWORD: ${DB_PASSWORD}\n      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}\n      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}\n      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@example.com}\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n      - templates:/templates\n      - certs:/certs\n    depends_on:\n      postgresql: { condition: service_healthy }\n    shm_size: 512mb\n    restart: unless-stopped\n    networks: [authentik]\nnetworks: { authentik: {} }\nvolumes: { database: {}, data: {}, templates: {}, certs: {} }\n",
       "superStack": true,
       "variables": [
@@ -1962,7 +1978,7 @@
           "defaultValue": "",
           "isSecret": true,
           "isPreset": false,
-          "help": "The initial akadmin password — generated into your vault, revealed in-app.",
+          "help": "The initial akadmin password, generated into your vault and revealed in-app.",
           "credential": {
             "field": "password",
             "group": "authentik",
@@ -1994,9 +2010,9 @@
         }
       ],
       "notes": [
-        "This is your identity provider — the initial admin (akadmin) password is generated into your vault and shown in-app; there is no open sign-up window to race.",
-        "Authentik is published on every interface. It's an IdP other apps redirect to: set your domain in Authentik and put TLS in front of it (a reverse proxy or your tailnet HTTPS endpoint) before wiring real SSO clients — the plain :9000 endpoint is for setup and in-app admin.",
-        "The database password and secret key are generated into your vault and reused on every redeploy — don't change them, or logins break.",
+        "This is your identity provider. The initial admin (akadmin) password is generated into your vault and shown in-app; there is no open sign-up window to race.",
+        "Authentik is published on every interface. It's an IdP other apps redirect to: set your domain in Authentik and put TLS in front of it (a reverse proxy or your tailnet HTTPS endpoint) before wiring real SSO clients. The plain :9000 endpoint is for setup and in-app admin.",
+        "The database password and secret key are generated into your vault and reused on every redeploy. Don't change them, or logins break.",
         "Proxy/LDAP outposts that Authentik deploys as containers need the worker's Docker socket added back (removed here for least privilege); without it, deploy outposts manually."
       ]
     },
@@ -2006,8 +2022,8 @@
       "category": "Tools",
       "symbol": "arrow.triangle.2.circlepath",
       "tagline": "Continuous file synchronisation between your devices, peer-to-peer and encrypted.",
-      "version": 1,
-      "compose": "services:\n  syncthing:\n    image: syncthing/syncthing:2.1.5\n    hostname: ${SYNCTHING_NAME:-meshdeck-syncthing}\n    environment:\n      PUID: ${PUID:-1000}\n      PGID: ${PGID:-1000}\n    volumes:\n      - config:/var/syncthing\n    ports:\n      - '127.0.0.1:${SYNCTHING_PORT:-8384}:8384'\n      - '${SYNC_PORT:-22000}:22000/tcp'\n      - '${SYNC_PORT:-22000}:22000/udp'\n      - '21027:21027/udp'\n    restart: unless-stopped\nvolumes: { config: {} }\n",
+      "version": 2,
+      "compose": "services:\n  syncthing:\n    image: syncthing/syncthing:2.1.5\n    hostname: ${SYNCTHING_NAME:-syncthing}\n    environment:\n      PUID: ${PUID:-1000}\n      PGID: ${PGID:-1000}\n    volumes:\n      - config:/var/syncthing\n    ports:\n      - '127.0.0.1:${SYNCTHING_PORT:-8384}:8384'\n      - '${SYNC_PORT:-22000}:22000/tcp'\n      - '${SYNC_PORT:-22000}:22000/udp'\n      - '21027:21027/udp'\n    restart: unless-stopped\nvolumes: { config: {} }\n",
       "variables": [
         {
           "key": "SYNCTHING_PORT",
@@ -2015,7 +2031,7 @@
           "defaultValue": "8384",
           "isSecret": false,
           "isPreset": false,
-          "help": "The web UI, bound to localhost — reached in-app."
+          "help": "The web UI, bound to localhost: reached in-app."
         },
         {
           "key": "SYNC_PORT",
@@ -2028,7 +2044,7 @@
         {
           "key": "SYNCTHING_NAME",
           "label": "Device name",
-          "defaultValue": "meshdeck-syncthing",
+          "defaultValue": "syncthing",
           "isSecret": false,
           "isPreset": false
         },
@@ -2048,7 +2064,7 @@
         }
       ],
       "notes": [
-        "The web UI has no password by default — set a GUI user and password in Settings. It's bound to localhost and reached in-app.",
+        "The web UI has no password by default: set a GUI user and password in Settings. It's bound to localhost and reached in-app.",
         "The sync port is published so other devices can pair with yours; peers still need your device ID, so it isn't open access."
       ]
     },
@@ -2058,7 +2074,7 @@
       "category": "Tools",
       "symbol": "bell.badge",
       "tagline": "Send push notifications to your phone and desktop over simple HTTP.",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  ntfy:\n    image: binwiederhier/ntfy:v2.28.0\n    command: serve\n    environment:\n      NTFY_BASE_URL: ${NTFY_BASE_URL:-http://localhost}\n      NTFY_CACHE_FILE: /var/cache/ntfy/cache.db\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - cache:/var/cache/ntfy\n      - config:/etc/ntfy\n    ports: ['${NTFY_PORT:-8082}:80']\n    restart: unless-stopped\nvolumes: { cache: {}, config: {} }\n",
       "variables": [
         {
@@ -2074,7 +2090,7 @@
           "defaultValue": "http://localhost",
           "isSecret": false,
           "isPreset": false,
-          "help": "Set to the URL your devices reach this server at (e.g. your tailnet name) — links and attachments break otherwise."
+          "help": "Set to the URL your devices reach this server at (e.g. your tailnet name); links and attachments break otherwise."
         },
         {
           "key": "TZ",
@@ -2085,7 +2101,7 @@
         }
       ],
       "notes": [
-        "ntfy is OPEN by default — anyone who can reach it can publish and subscribe to any topic. Before relying on it, set access control (NTFY_AUTH_DEFAULT_ACCESS=deny-all and add users) and set the Base URL to the address your devices use."
+        "ntfy is OPEN by default: anyone who can reach it can publish and subscribe to any topic. Before relying on it, set access control (NTFY_AUTH_DEFAULT_ACCESS=deny-all and add users) and set the Base URL to the address your devices use."
       ]
     },
     {
@@ -2094,7 +2110,7 @@
       "category": "Tools",
       "symbol": "folder",
       "tagline": "A web-based file manager for a folder on your host.",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  filebrowser:\n    image: filebrowser/filebrowser:v2.63.23\n    environment:\n      FB_DATABASE: /database/filebrowser.db\n      FB_ROOT: /srv\n    volumes:\n      - ${FILES_PATH:-/srv}:/srv\n      - database:/database\n    ports: ['127.0.0.1:${FILEBROWSER_PORT:-8083}:80']\n    restart: unless-stopped\nvolumes: { database: {} }\n",
       "variables": [
         {
@@ -2103,7 +2119,7 @@
           "defaultValue": "8083",
           "isSecret": false,
           "isPreset": false,
-          "help": "Bound to localhost (default login is admin) — reached in-app."
+          "help": "Bound to localhost (default login is admin): reached in-app."
         },
         {
           "key": "FILES_PATH",
@@ -2111,11 +2127,11 @@
           "defaultValue": "/srv",
           "isSecret": false,
           "isPreset": false,
-          "help": "A host folder the container (UID 1000) can read/write — not the default /srv if it's root-owned."
+          "help": "A host folder the container (UID 1000) can read/write, not the default /srv if it's root-owned."
         }
       ],
       "notes": [
-        "The default login is an admin account whose password is set on first run (check the container logs, or admin/admin) — it's bound to localhost and reached in-app; change the password before exposing it.",
+        "The default login is an admin account whose password is set on first run (check the container logs, or admin/admin). It's bound to localhost and reached in-app; change the password before exposing it.",
         "Serve a folder the container user (UID 1000) can access; a root-owned folder will list but not write."
       ]
     },
@@ -2124,8 +2140,8 @@
       "name": "Homebox",
       "category": "Home",
       "symbol": "shippingbox",
-      "tagline": "Track your household inventory — what you own, where it is, and its details.",
-      "version": 1,
+      "tagline": "Track your household inventory: what you own, where it is, and its details.",
+      "version": 2,
       "compose": "services:\n  homebox:\n    image: ghcr.io/sysadminsmedia/homebox:0.20.1\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/data\n    ports: ['${HOMEBOX_PORT:-7745}:7745']\n    restart: unless-stopped\nvolumes: { data: {} }\n",
       "variables": [
         {
@@ -2153,7 +2169,7 @@
       "category": "Tools",
       "symbol": "note.text",
       "tagline": "A lightweight, self-hosted notes and micro-blogging service.",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  memos:\n    image: neosmemo/memos:0.31.0\n    environment:\n      TZ: ${TZ:-Etc/UTC}\n    volumes:\n      - data:/var/opt/memos\n    ports: ['${MEMOS_PORT:-5230}:5230']\n    restart: unless-stopped\nvolumes: { data: {} }\n",
       "variables": [
         {
@@ -2172,7 +2188,7 @@
         }
       ],
       "notes": [
-        "Create your account immediately after deploy — the first sign-up becomes the admin."
+        "Create your account immediately after deploy: the first sign-up becomes the admin."
       ]
     },
     {
@@ -2181,7 +2197,7 @@
       "category": "Tools",
       "symbol": "square.grid.2x2",
       "tagline": "A fast, self-hosted dashboard for your feeds, widgets and services.",
-      "version": 1,
+      "version": 2,
       "compose": "configs:\n  glance_yml:\n    content: |\n      pages:\n        - name: Home\n          columns:\n            - size: small\n              widgets:\n                - type: clock\n                  hour-format: 24h\n            - size: full\n              widgets:\n                - type: weather\n                  location: London, United Kingdom\n                  units: metric\nservices:\n  glance:\n    image: glanceapp/glance:v0.8.6\n    configs:\n      - source: glance_yml\n        target: /app/config/glance.yml\n    ports: ['127.0.0.1:${GLANCE_PORT:-8084}:8080']\n    restart: unless-stopped\n",
       "variables": [
         {
@@ -2190,11 +2206,11 @@
           "defaultValue": "8084",
           "isSecret": false,
           "isPreset": false,
-          "help": "Bound to localhost (no auth) — reached in-app."
+          "help": "Bound to localhost (no auth): reached in-app."
         }
       ],
       "notes": [
-        "Glance has no authentication and is bound to localhost, reached in-app. Its config is built in; edit the stack's compose (in meshDeck) to add your own widgets. Keep it on localhost if you add widgets that surface internal data."
+        "Glance has no authentication and is bound to localhost, reached in-app. Its config is built in; edit the stack's compose file to add your own widgets. Keep it on localhost if you add widgets that surface internal data."
       ]
     }
   ],
