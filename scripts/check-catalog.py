@@ -156,6 +156,30 @@ def gate_templates(doc, gates):
                     text.fail(f"category {category!r} has an {word}")
 
 
+_MD_SPECIAL = set("\\`*_{}[]()#+-.!|~<>&")
+
+
+def md(value):
+    """Template-derived text, made inert for the Markdown summary the signer reads: every Markdown
+    or HTML special character escaped or encoded and line breaks flattened, so a bind target like
+    `/data<!--` or `**removed**` cannot hide or forge lines of the summary."""
+    out = []
+    for ch in str(value):
+        if ch in "\r\n\u2028\u2029\u0085":
+            out.append(" ")
+        elif ch == "<":
+            out.append("&lt;")
+        elif ch == ">":
+            out.append("&gt;")
+        elif ch == "&":
+            out.append("&amp;")
+        elif ch in _MD_SPECIAL:
+            out.append("\\" + ch)
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 def canonical(template):
     return json.dumps(template, sort_keys=True, ensure_ascii=False)
 
@@ -330,14 +354,14 @@ def risk_report(gate, deployed_doc, doc, compose_cmd):
             unchanged.append(tid)
             continue
         version = f"v{old[tid].get('version')} -> v{template['version']}" if kind == "changed" else f"v{template['version']}"
-        lines.append(f"**{tid}** ({kind}, {version}){baseline}")
+        lines.append(f"**{md(tid)}** ({kind}, {md(version)}){baseline}")
         for text, strong in gained:
-            lines.append(f"- {'**NEW**' if strong else 'new'}: {text}")
+            lines.append(f"- {'**NEW**' if strong else 'new'}: {md(text)}")
         for text, _ in lost:
-            lines.append(f"- removed: {text}")
+            lines.append(f"- removed: {md(text)}")
         lines.append("")
     if unchanged:
-        lines.append(f"No change in what these ask of the host: {', '.join(f'`{t}`' for t in unchanged)}.")
+        lines.append(f"No change in what these ask of the host: {', '.join(md(t) for t in unchanged)}.")
     return lines
 
 
@@ -408,7 +432,7 @@ def run(args):
     summary.append("")
     if banner and not args.no_banner:
         summary.append("> [!WARNING]")
-        summary.append("> **This push changes the publishing pipeline itself** (" + ", ".join(f"`{p}`" for p in banner)
+        summary.append("> **This push changes the publishing pipeline itself** (" + ", ".join(md(p) for p in banner)
                        + "). This summary is produced by that code, so it cannot vouch for itself. Before "
                        "approving the signing job, read the commit diff on github.com, not this page.")
         summary.append("")
@@ -416,12 +440,12 @@ def run(args):
         summary.append(f"Deployed commit: `{deployed_sha[:12]}` (v{deployed_version}). This commit: "
                        f"`{git('rev-parse', 'HEAD').stdout.decode().strip()[:12]}`.")
     if live is not None:
-        summary.append(f"Live site: {('version ' + str(json.loads(live[0]).get('version'))) if live[0] else 'unreadable (' + str(live[1]) + ')'}.")
+        summary.append(f"Live site: {('version ' + md(json.loads(live[0]).get('version'))) if live[0] else 'unreadable (' + md(live[1]) + ')'}.")
     summary.append("")
     summary.append("| Gate | Result | Detail |")
     summary.append("|---|---|---|")
     for gate in gates.values():
-        detail = "; ".join(gate.messages[:3] + gate.notes[:2]).replace("|", "\\|")
+        detail = md("; ".join(gate.messages[:3] + gate.notes[:2]))
         if len(gate.messages) > 3:
             detail += f"; and {len(gate.messages) - 3} more"
         summary.append(f"| {gate.name} | {gate.status} | {detail} |")
@@ -430,10 +454,10 @@ def run(args):
         old, new, added, removed, changed = template_changes(deployed_doc, doc)
         summary.append("### Templates")
         summary.append("")
-        summary.append(f"- added ({len(added)}): " + (", ".join(f"`{i}` v{new[i].get('version')}" for i in added) or "none"))
-        summary.append(f"- removed ({len(removed)}): " + (", ".join(f"`{i}`" for i in removed) or "none"))
+        summary.append(f"- added ({len(added)}): " + (", ".join(f"{md(i)} v{md(new[i].get('version'))}" for i in added) or "none"))
+        summary.append(f"- removed ({len(removed)}): " + (", ".join(md(i) for i in removed) or "none"))
         summary.append(f"- changed ({len(changed)}): " + (", ".join(
-            f"`{i}` v{old[i].get('version')} -> v{new[i].get('version')}" for i in changed) or "none"))
+            f"{md(i)} v{md(old[i].get('version'))} -> v{md(new[i].get('version'))}" for i in changed) or "none"))
         summary.append("")
     if summary_risk:
         summary.append("### What changed templates ask of the host")
@@ -447,7 +471,7 @@ def run(args):
         summary.append("")
         for gate in failed:
             for message in gate.messages:
-                summary.append(f"- **{gate.name}**: {message}")
+                summary.append(f"- **{gate.name}**: {md(message)}")
         summary.append("")
 
     text = "\n".join(summary) + "\n"
@@ -656,7 +680,47 @@ def self_test():
             failures.append(f"version {label}: expected {expect!r}, got {gate.messages}")
     print(f"version: {len(cases)} cases")
 
-    # 5. Signature checks with THROWAWAY keys (never the real ones).
+    # 5. The risk helpers: the env file compose reads, the features read from its model, and the
+    # escaping of template text in the summary the signer reads.
+    env_text = risk.env_file_text({"TAG": "a$b c", "LD_PRELOAD": "/x.so", "DOCKER_HOST": "tcp://evil",
+                                   "COMPOSE_FILE": "/etc/x.yml", "user": "u", "bad-key": "x"})
+    if env_text != "TAG='a$b c'\nLD_PRELOAD='/x.so'\n":
+        failures.append(f"risk env file: unexpected {env_text!r}")
+    for value in ("it's", "a\nB=x", "a\rb"):
+        try:
+            risk.env_file_text({"K": value})
+            failures.append(f"risk env file accepted {value!r}")
+        except risk.ResolveError:
+            pass
+    for key in risk.HOST_FILE_KEYS:
+        try:
+            risk.resolve(_with_compose(f"services:\n  a:\n    image: x\n    {key}: /etc/passwd\n"), ("false",))
+            failures.append(f"risk resolve ran compose on a template with {key}")
+        except risk.ResolveError as error:
+            if key not in str(error):
+                failures.append(f"risk resolve {key}: {error}")
+    model = {"services": {
+        "a": {"use_api_socket": True, "build": {"context": "https://example.com/x.git", "ssh": ["default"],
+                                                "secrets": [{"source": "s"}]}},
+        "b": {"provider": {"type": "model"}},
+        "c": {"build": {"context": "/p/stack"}},
+        "d": {"volumes": [{"type": "bind", "source": "/p/stack/data", "target": "/data<!--"}]}}}
+    found = risk.features(model, "/p/stack")
+    for text, strong in [("a: use_api_socket (the container-engine socket, without a bind mount)", True),
+                         ("a: builds an image on the host from https://example.com/x.git", True),
+                         ("a: build ssh ['default'] (forwards the host's SSH agent or keys)", True),
+                         ("a: build secret s", True),
+                         ("b: provider model (runs a host-side plugin instead of a container)", True),
+                         ("c: builds an image on the host from .", False)]:
+        if (text, strong) not in found:
+            failures.append(f"risk features: missing {(text, strong)} in {sorted(found)}")
+    for raw, inert in [("/data<!--", "/data&lt;\\!\\-\\-"), ("**removed**: x", "\\*\\*removed\\*\\*: x"),
+                       ("a\nb|c", "a b\\|c"), ("[x](http://e)", "\\[x\\]\\(http://e\\)")]:
+        if md(raw) != inert:
+            failures.append(f"summary escaping: md({raw!r}) = {md(raw)!r}, expected {inert!r}")
+    print("risk helpers: env file, features, summary escaping")
+
+    # 6. Signature checks with THROWAWAY keys (never the real ones).
     if shutil.which("minisign"):
         failures += _signature_self_test()
     else:

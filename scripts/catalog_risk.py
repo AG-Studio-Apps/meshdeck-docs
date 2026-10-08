@@ -8,13 +8,19 @@ deployed catalogue, so a template that quietly gains `privileged` or a Docker so
 
 Nothing is pulled or started: `config` only parses. Only templates that already pass the sanity
 rules are resolved (so a refused `include:` is never fetched). The values used are dummies: the
-template's own default when it has one, else `dummy` (secrets `dummy-secret`). The process
-environment is cleared except PATH, so the runner's variables cannot leak in.
+template's own default when it has one, else `dummy` (secrets `dummy-secret`). They reach compose
+through `--env-file` (single-quoted, so taken literally), never through the process environment,
+which holds only PATH and a scratch HOME: a template variable named LD_PRELOAD or DOCKER_HOST
+must not configure the compose process itself, and the runner's variables cannot leak in. Keys
+compose or the CLI read to configure themselves (COMPOSE_*, DOCKER_* and the other reserved names)
+are left out of the env file.
 """
 import json
 import os
 import subprocess
 import tempfile
+
+import catalog_sanity as sanity
 
 SOCKETS = ("docker.sock", "podman.sock", "containerd.sock", "crio.sock")
 SENSITIVE_ROOTS = ("/", "/etc", "/root", "/home", "/var/lib", "/var/run", "/run", "/proc", "/sys", "/dev",
@@ -38,20 +44,47 @@ def dummy_values(template):
     return values
 
 
+def env_file_text(values):
+    """The dummies as an env file compose reads literally. A key that is not an environment name, or
+    that compose or the CLI read to configure themselves, is left out (the placeholder then resolves
+    empty, which the sanity gates already refuse for a template being published); a value that
+    single quotes cannot carry is refused rather than guessed."""
+    lines = []
+    for key, value in values.items():
+        if not sanity.is_env_name(key) or sanity.is_reserved_key(key):
+            continue
+        if "'" in value or any(ch in value for ch in "\r\n\0"):
+            raise ResolveError(f"the value of {key} cannot be passed to compose literally (a quote or a line break)")
+        lines.append(f"{key}='{value}'")
+    return "".join(line + "\n" for line in lines)
+
+
+# Keys that make `compose config` READ a file on the machine it runs on. Not resolved on the runner:
+# a template could otherwise name a runner file and have a parse error quote it into the public
+# log or summary. Plain text search is enough because the refusals (run first) reject the numeric
+# escapes that could spell a key without its letters.
+HOST_FILE_KEYS = ("env_file", "label_file")
+
+
 def resolve(template, compose_cmd=("docker", "compose"), timeout=60):
     """The resolved model (dict) and the project directory it was resolved in."""
+    for key in HOST_FILE_KEYS:
+        if key in template["compose"]:
+            raise ResolveError(f"uses {key}, which reads a host file: not resolved on the runner, review it by hand")
     with tempfile.TemporaryDirectory(prefix="catalog-risk-") as root:
         project = os.path.join(root, "stack")
         os.mkdir(project)
         path = os.path.join(project, "compose.yaml")
         with open(path, "w", encoding="utf-8") as handle:
             handle.write(template["compose"])
+        env_file = os.path.join(root, "dummy.env")
+        with open(env_file, "w", encoding="utf-8") as handle:
+            handle.write(env_file_text(dummy_values(template)))
         env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": root}
-        env.update(dummy_values(template))
         try:
             result = subprocess.run(
-                list(compose_cmd) + ["--project-directory", project, "-p", "catalog-check", "-f", path,
-                                     "config", "--format", "json"],
+                list(compose_cmd) + ["--env-file", env_file, "--project-directory", project, "-p", "catalog-check",
+                                     "-f", path, "config", "--format", "json"],
                 cwd=project, env=env, capture_output=True, text=True, timeout=timeout)
         except FileNotFoundError:
             raise ResolveError("docker compose is not installed") from None
@@ -106,6 +139,26 @@ def features(model, project):
         for key in ("pid", "ipc", "uts", "userns_mode", "cgroup"):
             if service.get(key):
                 add(f"{prefix} {key} {service[key]}", service[key] == "host")
+        if service.get("use_api_socket"):
+            add(f"{prefix} use_api_socket (the container-engine socket, without a bind mount)", True)
+        provider = service.get("provider")
+        if provider:
+            kind = provider.get("type") if isinstance(provider, dict) else provider
+            add(f"{prefix} provider {kind} (runs a host-side plugin instead of a container)", True)
+        build = service.get("build")
+        if build:
+            build = build if isinstance(build, dict) else {"context": build}
+            context = str(build.get("context", ""))
+            remote = "://" in context or context.startswith("git@")
+            shown = context if remote else _host_path(context, project)
+            add(f"{prefix} builds an image on the host from {shown}", remote or "(outside" in shown)
+            if build.get("ssh"):
+                add(f"{prefix} build ssh {build['ssh']} (forwards the host's SSH agent or keys)", True)
+            for secret in build.get("secrets") or []:
+                source = secret.get("source") if isinstance(secret, dict) else secret
+                add(f"{prefix} build secret {source}", True)
+            for name, ctx in sorted((build.get("additional_contexts") or {}).items()):
+                add(f"{prefix} build context {name} {ctx}", True)
         if service.get("cgroup_parent"):
             add(f"{prefix} cgroup_parent {service['cgroup_parent']}", True)
         for other in service.get("volumes_from") or []:
