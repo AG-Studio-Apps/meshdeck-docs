@@ -40,6 +40,14 @@ The publish workflow builds the site, runs the gates, signs the catalogue in the
 signature together. A push that leaves `templates.json` unchanged reuses the live signature and
 needs no approval.
 
+Approving a signature (the `catalog-signing` job waits for its reviewer): the job summary is
+produced by the pushed code, so it is a guide, not proof. Find the commit the live catalogue was
+signed from, independently of the run: `curl -s https://meshdeck.ag-applications.com/templates.json.minisig | sed -n 3p`
+(the `commit=` token; for the first signed publish, `bfd4c63`). Then read
+`https://github.com/AG-Studio-Apps/meshdeck-docs/compare/<that commit>...<the run's commit>` on
+github.com. Approve only when everything in it is expected; any change under `.github/`, `scripts/`,
+`keys/` or `_config.yml` means reading that code, not the summary.
+
 To change the catalogue: edit `templates.json`, set `version` to the deployed version + 1, bump the
 `version` of every template you changed, and run `scripts/check-catalog.py --deployed-ref origin/main`
 before you push. No app names in template text, no em-dashes or en-dashes, no default on a secret.

@@ -22,6 +22,13 @@
 # signs a throwaway probe with the key and verifies it against keys/catalog-emergency.pub.
 # Nothing in the repository is touched and nothing is fetched.
 #
+# Incident hygiene: when the primary key leaked, assume the repository (and this box's GitHub
+# token) may be compromised too. This script and the gates it runs are repository code, run on
+# the machine that holds the emergency key while you type its passphrase. So run it only from a
+# clone whose scripts/ and keys/ match a commit you have reviewed: it refuses uncommitted changes
+# there and prints both tree ids, to compare with the ids recorded when the pipeline was reviewed
+# (or run the copy of this script kept with the offline key). Prefer a fresh clone over an old one.
+#
 # For tests only: --pub FILE verifies against another public key, --live-file FILE stands in
 # for the live templates.json, and --no-gates skips the gates.
 set -euo pipefail
@@ -84,6 +91,17 @@ if [ "$DRY_RUN" -eq 1 ]; then
 fi
 
 # --- Emergency signature -----------------------------------------------------------------
+if git -C "$REPO_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+  if [ -n "$(git -C "$REPO_DIR" status --porcelain -- scripts keys)" ]; then
+    echo "refusing: scripts/ or keys/ have uncommitted changes; sign only from reviewed code" >&2
+    git -C "$REPO_DIR" status --short -- scripts keys >&2
+    exit 1
+  fi
+  echo "Code in use: commit $(git -C "$REPO_DIR" rev-parse --short=12 HEAD), scripts/ tree $(git -C "$REPO_DIR" rev-parse --short=12 HEAD:scripts), keys/ tree $(git -C "$REPO_DIR" rev-parse --short=12 HEAD:keys)."
+  echo "Compare them with the ids recorded for the reviewed pipeline before typing the passphrase."
+else
+  echo "warning: $REPO_DIR is not a git clone; the code in use cannot be checked" >&2
+fi
 CATALOG="$REPO_DIR/templates.json"
 SIG="$REPO_DIR/templates.json.minisig"
 [ -f "$CATALOG" ] || { echo "no templates.json in $REPO_DIR" >&2; exit 1; }
