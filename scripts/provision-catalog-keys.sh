@@ -4,7 +4,8 @@
 # the apps trust it too, so a leaked or lost primary can be replaced without
 # waiting for an app release). Adapted from stackGuard's provision-keys.sh.
 #
-#   scripts/provision-catalog-keys.sh --only primary   [--set-secrets] [--out DIR]
+#   scripts/provision-catalog-keys.sh --only primary   --set-secrets --backup DIR
+#   scripts/provision-catalog-keys.sh --only primary   [--out DIR]
 #   scripts/provision-catalog-keys.sh --only emergency  --out DIR
 #   scripts/provision-catalog-keys.sh --restore-test ROLE SECRET_KEY_FILE
 #
@@ -12,9 +13,15 @@
 #   Run on a trusted machine with gh logged in. With --set-secrets the key and
 #   its passphrase go straight into the `catalog-signing` ENVIRONMENT of the
 #   catalogue repo (MINISIGN_KEY / MINISIGN_PASSWORD, fed on stdin, never on a
-#   command line or clipboard), and the local secret key and passphrase are then
-#   destroyed: the environment secret is the only copy. A rotation makes a new
-#   key anyway. Without --set-secrets the key is kept in DIR (default
+#   command line or clipboard). --backup DIR is then required: it writes a
+#   recovery copy (primary.key, encrypted by minisign, and
+#   primary.passphrase.age, that passphrase age-encrypted under a MASTER
+#   passphrase you paste from your password manager when age asks) to DIR,
+#   which must be off this box or on removable media (a path under ~/appfactory
+#   is refused). The working copy here is destroyed. To recover after losing
+#   the CI secret: age -d DIR/primary.passphrase.age gives the passphrase, and
+#   DIR/primary.key plus that passphrase go back into the environment.
+#   Without --set-secrets the key is kept in DIR (default
 #   ~/appfactory/catalog_keys) with its passphrase age-encrypted under a master
 #   passphrase you type once.
 #
@@ -48,6 +55,7 @@ ENVIRONMENT="catalog-signing"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT=""
 SET_SECRETS=0
+BACKUP=""
 ROLE=""
 RESTORE_ROLE=""
 RESTORE_KEY=""
@@ -59,6 +67,7 @@ while [ $# -gt 0 ]; do
     --only) shift; case "${1:-}" in primary|emergency) ROLE="$1" ;; *) echo "--only takes primary or emergency" >&2; exit 2 ;; esac ;;
     --out) shift; OUT="${1:-}"; [ -n "$OUT" ] || usage ;;
     --set-secrets) SET_SECRETS=1 ;;
+    --backup) shift; BACKUP="${1:-}"; [ -n "$BACKUP" ] || usage ;;
     --restore-test) shift; RESTORE_ROLE="${1:-}"; shift || true; RESTORE_KEY="${1:-}" ;;
     -h|--help) usage ;;
     *) echo "unknown argument $1" >&2; usage ;;
@@ -103,6 +112,15 @@ if [ "$ROLE" = emergency ]; then
 else
   [ -n "$OUT" ] || OUT="$HOME/appfactory/catalog_keys"
   if [ "$SET_SECRETS" -eq 1 ]; then
+    [ -n "$BACKUP" ] || { echo "--set-secrets needs --backup DIR (a recovery copy off this box, unlocked by a master passphrase from your password manager)" >&2; exit 2; }
+    case "$(cd "$(dirname "$BACKUP")" 2>/dev/null && pwd)/$(basename "$BACKUP")/" in
+      "$HOME/appfactory/"*) echo "refusing: the primary's recovery copy must not be written under ~/appfactory (agents on this box can read it)" >&2; exit 2 ;;
+    esac
+    command -v age >/dev/null || { echo "age is not installed (needed for the recovery copy)" >&2; exit 1; }
+    mkdir -p "$BACKUP"; chmod 700 "$BACKUP"
+    for f in "$BACKUP/primary.key" "$BACKUP/primary.passphrase.age"; do
+      [ -e "$f" ] && { echo "$f already exists; move it aside to rotate" >&2; exit 1; }
+    done
     command -v gh >/dev/null || { echo "gh is not installed" >&2; exit 1; }
     gh auth status >/dev/null 2>&1 || { echo "gh is not logged in" >&2; exit 1; }
   else
@@ -146,13 +164,24 @@ echo "generated $ROLE key: id $NEW_ID"
 destroy() { if command -v shred >/dev/null; then shred -u "$@"; else rm -P "$@" 2>/dev/null || rm -f "$@"; fi; }
 
 if [ "$ROLE" = primary ] && [ "$SET_SECRETS" -eq 1 ]; then
+  # Recovery copy first, so a failed upload never leaves the only copy in CI.
+  echo
+  echo "age will now ask for the MASTER passphrase that locks the recovery copy."
+  echo "Create it in your password manager first, then paste it here (twice)."
+  printf '%s' "$PASS" | age -p -o "$TMP/$ROLE.passphrase.age"
+  chmod 600 "$TMP/$ROLE.passphrase.age"
+  cp "$TMP/$ROLE.key" "$BACKUP/$ROLE.key"
+  cp "$TMP/$ROLE.passphrase.age" "$BACKUP/$ROLE.passphrase.age"
+  cp "$TMP/$ROLE.pub" "$BACKUP/$ROLE.pub"
+  chmod 600 "$BACKUP/$ROLE.key" "$BACKUP/$ROLE.passphrase.age"
+  echo "recovery copy written to $BACKUP"
   gh secret set MINISIGN_KEY --env "$ENVIRONMENT" -R "$REPO" < "$TMP/$ROLE.key"
   printf '%s' "$PASS" | gh secret set MINISIGN_PASSWORD --env "$ENVIRONMENT" -R "$REPO"
   echo "secrets set on $REPO, environment $ENVIRONMENT: MINISIGN_KEY, MINISIGN_PASSWORD"
-  # The environment secret is now the only copy; keep just the public half.
-  destroy "$TMP/$ROLE.key"
+  # The working copy is no longer needed: CI has one, the recovery copy has one.
+  destroy "$TMP/$ROLE.key" "$TMP/$ROLE.passphrase.age"
   mv "$TMP/$ROLE.pub" "$OUT/"
-  KEPT="the public key only (the secret key exists only in the $ENVIRONMENT environment)"
+  KEPT="the public key only (the secret key is in the $ENVIRONMENT environment and the recovery copy in $BACKUP)"
 elif [ "$ROLE" = primary ]; then
   echo
   echo "age will now ask for a master passphrase to encrypt the primary's passphrase."
