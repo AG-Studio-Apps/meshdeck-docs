@@ -43,7 +43,12 @@ social:
   name: meshDeck
 logo: /assets/img/icon-512.png
 
+# Never served: scripts/ holds the catalogue gates and signing helpers, keys/ the public halves of the
+# catalogue signing keys (public in the repository; the site need not serve them). The publish
+# workflow fails if either appears in the built site.
 exclude:
+  - scripts
+  - keys
   - Gemfile
   - Gemfile.lock
   - README.md

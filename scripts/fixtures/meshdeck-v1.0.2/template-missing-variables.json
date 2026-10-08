@@ -1,0 +1,21 @@
+{
+  "version": 14,
+  "categories": [
+    "Tools"
+  ],
+  "templates": [
+    {
+      "id": "demo",
+      "name": "Demo",
+      "tagline": "A demo app",
+      "category": "Tools",
+      "symbol": "shippingbox",
+      "version": 1,
+      "compose": "services:\n  app:\n    image: nginx\n    ports:\n      - \"${PORT}:80\"\n",
+      "notes": []
+    }
+  ],
+  "featured": [
+    "demo"
+  ]
+}

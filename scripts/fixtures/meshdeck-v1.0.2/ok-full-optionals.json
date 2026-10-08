@@ -1,0 +1,90 @@
+{
+  "version": 14,
+  "categories": [
+    "Tools"
+  ],
+  "templates": [
+    {
+      "id": "demo",
+      "name": "Demo",
+      "tagline": "A demo app",
+      "category": "Tools",
+      "symbol": "shippingbox",
+      "version": 1,
+      "compose": "services:\n  app:\n    image: nginx\n    ports:\n      - \"${PORT}:80\"\n",
+      "variables": [
+        {
+          "key": "MODE",
+          "label": "Mode",
+          "defaultValue": "a",
+          "isSecret": false,
+          "isPreset": false,
+          "help": "Pick",
+          "options": [
+            {
+              "text": "A",
+              "value": "a"
+            },
+            {
+              "text": "B",
+              "value": "b"
+            }
+          ],
+          "kind": "text"
+        },
+        {
+          "key": "ADMIN_USER",
+          "label": "User",
+          "defaultValue": "admin",
+          "isSecret": false,
+          "isPreset": false,
+          "credential": {
+            "field": "username",
+            "group": "g",
+            "tier": "applied",
+            "display": "Demo"
+          }
+        },
+        {
+          "key": "ADMIN_PASSWORD",
+          "label": "Password",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "credential": {
+            "field": "password",
+            "group": "g",
+            "tier": "suggested",
+            "display": "Demo"
+          }
+        },
+        {
+          "key": "DB_PASSWORD",
+          "label": "DB",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
+        },
+        {
+          "key": "PORT",
+          "label": "Port",
+          "defaultValue": "8080",
+          "isSecret": false,
+          "isPreset": true,
+          "kind": "port"
+        }
+      ],
+      "notes": [
+        "One",
+        ""
+      ],
+      "superStack": true
+    }
+  ],
+  "featured": [
+    "demo"
+  ]
+}

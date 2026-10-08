@@ -10,7 +10,7 @@
 name: Test stack templates
 on:
   push:
-    paths: ["templates.json", "scripts/test-templates.py", "scripts/check-compose-floor.py"]
+    paths: ["templates.json", "scripts/**"]
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"  # Mondays 06:00 UTC — full sweep for image rot
@@ -21,10 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2  # so a push can diff the catalog against the previous commit
+          persist-credentials: false  # the steps below run third-party images
+      # The catalogue gates (scripts/check-catalog.py), so a templates.json change without a version
+      # bump, or one the apps would refuse, goes red on any branch. The publish workflow runs the same
+      # gates against the DEPLOYED commit before it signs; this one compares with the previous commit.
+      - name: Catalogue gates
+        run: python3 scripts/check-catalog.py --deployed-ref HEAD~1
+
       - name: Deploy and check templates
+        if: always()
         run: python3 scripts/test-templates.py
         env:
           # push → only changed templates; manual/scheduled → everything
