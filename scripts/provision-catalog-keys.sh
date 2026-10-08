@@ -112,17 +112,22 @@ if [ "$ROLE" = emergency ]; then
 else
   [ -n "$OUT" ] || OUT="$HOME/appfactory/catalog_keys"
   if [ "$SET_SECRETS" -eq 1 ]; then
+    # Every check first; nothing is created until all of them pass.
     [ -n "$BACKUP" ] || { echo "--set-secrets needs --backup DIR (a recovery copy off this box, unlocked by a master passphrase from your password manager)" >&2; exit 2; }
     case "$(cd "$(dirname "$BACKUP")" 2>/dev/null && pwd)/$(basename "$BACKUP")/" in
       "$HOME/appfactory/"*) echo "refusing: the primary's recovery copy must not be written under ~/appfactory (agents on this box can read it)" >&2; exit 2 ;;
     esac
-    command -v age >/dev/null || { echo "age is not installed (needed for the recovery copy)" >&2; exit 1; }
-    mkdir -p "$BACKUP"; chmod 700 "$BACKUP"
+    [ -d "$(dirname "$BACKUP")" ] || { echo "the folder that should hold $BACKUP does not exist (is the USB stick mounted?)" >&2; exit 2; }
     for f in "$BACKUP/primary.key" "$BACKUP/primary.passphrase.age"; do
       [ -e "$f" ] && { echo "$f already exists; move it aside to rotate" >&2; exit 1; }
     done
+    command -v age >/dev/null || { echo "age is not installed (needed for the recovery copy)" >&2; exit 1; }
     command -v gh >/dev/null || { echo "gh is not installed" >&2; exit 1; }
-    gh auth status >/dev/null 2>&1 || { echo "gh is not logged in" >&2; exit 1; }
+    gh auth status >/dev/null 2>&1 || { echo "gh is not logged in: run gh auth login first" >&2; exit 1; }
+    gh api "repos/$REPO/environments/$ENVIRONMENT" >/dev/null 2>&1 \
+      || { echo "the $ENVIRONMENT environment does not exist on $REPO (or this gh login cannot see it); create it first:" >&2
+           echo "  gh api -X PUT repos/$REPO/environments/$ENVIRONMENT" >&2; exit 1; }
+    mkdir -p "$BACKUP"; chmod 700 "$BACKUP"
   else
     command -v age >/dev/null || { echo "age is not installed (needed to keep the primary locally)" >&2; exit 1; }
   fi
