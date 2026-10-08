@@ -27,5 +27,25 @@ Pages builds with the `github-pages` gem, so what builds here is what is publish
 
 ## Deploy
 
-GitHub Pages, from `main`, custom domain `meshdeck.ag-applications.com` (the `CNAME` file). DNS is a
-CNAME from `meshdeck` to `ag-studio-apps.github.io`.
+GitHub Pages, deployed by `.github/workflows/publish.yml` on every push to `main`, custom domain
+`meshdeck.ag-applications.com` (the `CNAME` file). DNS is a CNAME from `meshdeck` to
+`ag-studio-apps.github.io`.
+
+## The template catalogue
+
+`templates.json` is served with a detached minisign signature, `templates.json.minisig`, which the
+apps verify against two pinned keys (`keys/catalog-primary.pub`, `keys/catalog-emergency.pub`).
+The publish workflow builds the site, runs the gates, signs the catalogue in the protected
+`catalog-signing` environment (a reviewer approves each new signature) and deploys body and
+signature together. A push that leaves `templates.json` unchanged reuses the live signature and
+needs no approval.
+
+To change the catalogue: edit `templates.json`, set `version` to the deployed version + 1, bump the
+`version` of every template you changed, and run `scripts/check-catalog.py --deployed-ref origin/main`
+before you push. No app names in template text, no em-dashes or en-dashes, no default on a secret.
+
+If the primary key is leaked or lost: delete `MINISIGN_KEY` from the environment, then sign the next
+version offline with `scripts/sign-emergency.sh --key <emergency.key>`, commit `templates.json` and
+`templates.json.minisig` together and push. Delete the `.minisig` in the next normal catalogue change.
+Run `scripts/sign-emergency.sh --key <emergency.key> --dry-run` once a year to prove the offline key
+still works.
