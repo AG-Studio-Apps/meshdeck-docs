@@ -1,0 +1,38 @@
+{
+  "version": 15,
+  "categories": [
+    "Tools"
+  ],
+  "templates": [
+    {
+      "id": "demo",
+      "name": "Demo",
+      "tagline": "A demo app",
+      "category": "Tools",
+      "symbol": "shippingbox",
+      "version": 1,
+      "compose": "services:\n  app:\n    image: nginx\n    ports:\n      - \"${PORT}:80\"\n    environment:\n      KEY: ${VPN_KEY}\n",
+      "variables": [
+        {
+          "key": "PORT",
+          "label": "Port",
+          "defaultValue": "8080",
+          "isSecret": false,
+          "isPreset": false
+        },
+        {
+          "key": "VPN_KEY",
+          "label": "VPN key",
+          "defaultValue": "",
+          "isSecret": true,
+          "isPreset": false,
+          "provided": "yes"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "featured": [
+    "demo"
+  ]
+}
