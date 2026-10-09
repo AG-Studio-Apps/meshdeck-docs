@@ -9,7 +9,8 @@ STRICTER here (a flag emoji is one Character but two code points), never looser.
 
 `problems(template)` returns what meshTerm's TemplateSanity would find (a template with any is
 hidden on the phone). `catalogue_rules(template)` adds the CI-only rules of plan 4.3 items 4
-and 7: brand-neutral text, no em-dash or en-dash in display text, no published secret default.
+and 7: brand-neutral text, no em-dash or en-dash in display text, no published secret default,
+and a `provided` variable (v15) that is a boolean and never generated, preset or defaulted.
 """
 import re
 import unicodedata
@@ -477,7 +478,7 @@ def problems(template):
 
 def catalogue_rules(template):
     """CI-only rules (plan 4.3 items 4 and 7): brand-neutral text, no dashes in display text, no
-    published secret default. A list of strings."""
+    published secret default, a coherent `provided` flag. A list of strings."""
     found = []
     display = [("name", template["name"]), ("tagline", template["tagline"]), ("category", template["category"])]
     display += [("a note", n) for n in template["notes"]]
@@ -504,10 +505,27 @@ def catalogue_rules(template):
             found.append(f"{field} names an app ({BRAND.search(value).group(0)!r}); the catalogue serves "
                          f"both apps, so its text stays neutral")
     for variable in template["variables"]:
+        key = variable["key"]
+        # `provided` (v15, shared TemplateVariable.provided): the value comes from an outside account
+        # or provider and must never be generated, so it cannot carry a generation hint, be a preset
+        # or ship a default.
+        provided = variable.get("provided", False)
+        if not isinstance(provided, bool):
+            found.append(f"{key} provided must be true or false")
+            provided = False
+        if provided:
+            if "generate" in variable:
+                found.append(f"{key} is provided (from an outside provider) and also has generate; "
+                             f"a provided value is never generated")
+            if variable["isPreset"]:
+                found.append(f"{key} is provided (from an outside provider) and also a preset")
+            if variable["defaultValue"]:
+                found.append(f"{key} is provided (from an outside provider) but has a default; leave it blank")
+            continue
         credential = variable.get("credential") or {}
-        secret = variable["isSecret"] or looks_secret(variable["key"]) or credential.get("field") == "password" \
+        secret = variable["isSecret"] or looks_secret(key) or credential.get("field") == "password" \
             or "generate" in variable
         if secret and variable["defaultValue"] and not variable["isPreset"]:
-            found.append(f"{variable['key']} is a secret with a published default (a public password); "
+            found.append(f"{key} is a secret with a published default (a public password); "
                          f"leave it blank so the app generates one")
     return found

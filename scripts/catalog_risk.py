@@ -35,6 +35,10 @@ class ResolveError(Exception):
 def dummy_values(template):
     values = {}
     for variable in template["variables"]:
+        # `provided` (v15): a value from an outside provider; it gets the same dummy as any other
+        # variable, but only a true boolean is a catalogue value.
+        if "provided" in variable and not isinstance(variable["provided"], bool):
+            raise ResolveError(f"{variable['key']}: provided must be true or false")
         credential = variable.get("credential") or {}
         secret = variable["isSecret"] or credential.get("field") == "password" or "generate" in variable
         if variable["defaultValue"]:

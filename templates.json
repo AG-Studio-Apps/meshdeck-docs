@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "categories": [
     "Web & CMS",
     "Media",
@@ -1356,7 +1356,7 @@
       "tagline": "Jellyfin + Sonarr/Radarr/Lidarr + Prowlarr + qBittorrent (VPN) + SABnzbd + Jellyseerr",
       "category": "Media",
       "symbol": "play.rectangle.on.rectangle",
-      "version": 2,
+      "version": 3,
       "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: openvpn\n      OPENVPN_USER: ${OPENVPN_USER}\n      OPENVPN_PASSWORD: ${OPENVPN_PASSWORD}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
       "variables": [
         {
@@ -1381,7 +1381,8 @@
           "defaultValue": "",
           "isSecret": true,
           "isPreset": false,
-          "help": "Your VPN's OpenVPN password."
+          "help": "Issued by your VPN provider, never generated here: the OpenVPN password that goes with your OpenVPN username.",
+          "provided": true
         },
         {
           "key": "VPN_COUNTRIES",
@@ -1644,7 +1645,7 @@
       "tagline": "The media suite with a WireGuard VPN killswitch, for Mullvad and other WireGuard providers.",
       "category": "Media",
       "symbol": "play.rectangle.on.rectangle",
-      "version": 2,
+      "version": 3,
       "compose": "services:\n  gluetun:\n    image: qmcgaw/gluetun:v3\n    cap_add:\n      - NET_ADMIN\n    devices:\n      - /dev/net/tun:/dev/net/tun\n    environment:\n      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}\n      VPN_TYPE: wireguard\n      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY}\n      WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES}\n      SERVER_COUNTRIES: ${VPN_COUNTRIES}\n      FIREWALL_OUTBOUND_SUBNETS: 172.28.0.0/16\n      TZ: ${TZ}\n    ports:\n      - \"${QBIT_PORT}:8080\"\n    volumes:\n      - gluetun:/gluetun\n    networks:\n      - media\n    restart: unless-stopped\n  qbittorrent:\n    image: lscr.io/linuxserver/qbittorrent:latest\n    network_mode: \"service:gluetun\"\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n      WEBUI_PORT: \"8080\"\n    volumes:\n      - qbittorrent:/config\n      - ${DATA_PATH}:/data\n    depends_on:\n      gluetun:\n        condition: service_healthy\n    restart: unless-stopped\n  sabnzbd:\n    image: lscr.io/linuxserver/sabnzbd:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SABNZBD_PORT}:8080\"\n    volumes:\n      - sabnzbd:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  prowlarr:\n    image: lscr.io/linuxserver/prowlarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${PROWLARR_PORT}:9696\"\n    volumes:\n      - prowlarr:/config\n    networks:\n      - media\n    restart: unless-stopped\n  sonarr:\n    image: lscr.io/linuxserver/sonarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${SONARR_PORT}:8989\"\n    volumes:\n      - sonarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  radarr:\n    image: lscr.io/linuxserver/radarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${RADARR_PORT}:7878\"\n    volumes:\n      - radarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  lidarr:\n    image: lscr.io/linuxserver/lidarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${LIDARR_PORT}:8686\"\n    volumes:\n      - lidarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  bazarr:\n    image: lscr.io/linuxserver/bazarr:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${BAZARR_PORT}:6767\"\n    volumes:\n      - bazarr:/config\n      - ${DATA_PATH}:/data\n    networks:\n      - media\n    restart: unless-stopped\n  jellyfin:\n    image: lscr.io/linuxserver/jellyfin:latest\n    environment:\n      PUID: ${PUID}\n      PGID: ${PGID}\n      TZ: ${TZ}\n    ports:\n      - \"${JELLYFIN_PORT}:8096\"\n    volumes:\n      - jellyfin:/config\n      - ${DATA_PATH}/media:/media\n    networks:\n      - media\n    restart: unless-stopped\n  jellyseerr:\n    image: fallenbagel/jellyseerr:latest\n    environment:\n      TZ: ${TZ}\n      LOG_LEVEL: info\n    ports:\n      - \"${JELLYSEERR_PORT}:5055\"\n    volumes:\n      - jellyseerr:/app/config\n    networks:\n      - media\n    restart: unless-stopped\nvolumes:\n  gluetun:\n  qbittorrent:\n  sabnzbd:\n  prowlarr:\n  sonarr:\n  radarr:\n  lidarr:\n  bazarr:\n  jellyfin:\n  jellyseerr:\nnetworks:\n  media:\n    ipam:\n      config:\n        - subnet: 172.28.0.0/16\n\n",
       "superStack": true,
       "variables": [
@@ -1662,7 +1663,8 @@
           "defaultValue": "",
           "isSecret": true,
           "isPreset": false,
-          "help": "Your WireGuard private key from the provider's config/dashboard."
+          "help": "Issued by your VPN provider, never generated here: the PrivateKey line of the WireGuard config it gives you (Mullvad, for example, shows it in its WireGuard configuration file).",
+          "provided": true
         },
         {
           "key": "WIREGUARD_ADDRESSES",

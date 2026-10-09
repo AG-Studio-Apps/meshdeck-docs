@@ -25,8 +25,11 @@ KINDS = {"text", "port", "number", "bool", "url", "path", "email", "timezone"}
 ALLOWED_TOP = {"version", "categories", "templates", "featured"}
 ALLOWED_TEMPLATE = {"id", "name", "tagline", "category", "symbol", "version", "compose", "variables", "notes",
                     "superStack"}
+# `provided` (catalogue v15): the value comes from an outside account or provider and is never
+# generated. meshDeck v1.0.1/v1.0.2 ignore it (synthesized Codable skips unknown keys; recorded
+# fixtures ok-provided-*.json).
 ALLOWED_VARIABLE = {"key", "label", "defaultValue", "isSecret", "help", "options", "isPreset", "credential",
-                    "generate", "kind"}
+                    "generate", "kind", "provided"}
 ALLOWED_OPTION = {"text", "value"}
 ALLOWED_CREDENTIAL = {"field", "group", "tier", "display"}
 ALLOWED_GENERATE = {"charset"}
@@ -324,6 +327,8 @@ def schema_problems(doc):
             for key in ("isSecret", "isPreset"):
                 if not isinstance(variable.get(key), bool):
                     problems.append(f"{vwhere}: {key} must be true or false")
+            if "provided" in variable and not isinstance(variable["provided"], bool):
+                problems.append(f"{vwhere}: provided must be true or false (or absent)")
             for key, value in variable.items():
                 if value is None:
                     problems.append(f"{vwhere}: {key} is null; leave an absent value out instead")

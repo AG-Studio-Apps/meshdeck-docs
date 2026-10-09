@@ -13,8 +13,8 @@ Gates, in order (any FAIL exits 1):
   meshdeck-1.0.2  fielded meshDeck v1.0.2 decodes the WHOLE file (its decoder is synthesized:
                   one bad template empties every phone's list). Mirror pinned by fixtures.
   schema          known keys only, integers as integers, `kind` from the shared enum, options and
-                  credential and generate shapes, unique ids and categories, featured ids exist,
-                  every template's category listed.
+                  credential and generate shapes, `provided` a boolean, unique ids and categories,
+                  featured ids exist, every template's category listed.
   template-rules  shared-1.4.0 StackTemplate.validate(): id a stack name, non-empty fields,
                   env-name keys, no duplicate keys, every ${VAR} without a default declared.
   app-sanity      meshTerm's TemplateSanity: display caps; control, separator and bidi
@@ -24,7 +24,8 @@ Gates, in order (any FAIL exits 1):
                   driver_opts device, secrets/configs file or environment, and the R10 forms that
                   carry them: aliases, merge keys, flow documents, explicit and tagged keys, ---).
   text            no app name in any template text, no em-dash or en-dash in display text, no
-                  published default on a secret.
+                  published default on a secret; a `provided` variable has no generate, preset
+                  or default.
   version         against the DEPLOYED commit: unchanged, or exactly deployed + 1; a changed
                   template bumps its own version; a live version above this one, or the same
                   version with other bytes, is an ALARM.
@@ -586,6 +587,12 @@ TEXT_CASES = [
     ("secret default", _template(variables=[_var("PORT", "8080"), _var("DB_PASSWORD", "hunter2", secret=True)]), "published default"),
     ("looksSecret default", _template(variables=[_var("PORT", "8080"), _var("API_TOKEN", "abc")]), "published default"),
     ("preset secret default allowed", _template(variables=[_var("PORT", "8080"), _var("DB_PASSWORD", "x", secret=True, preset=True)]), None),
+    ("provided secret allowed", _template(variables=[_var("PORT", "8080"), _var("VPN_KEY", secret=True, provided=True)]), None),
+    ("provided false allowed", _template(variables=[_var("PORT", "8080", provided=False)]), None),
+    ("provided not a bool", _template(variables=[_var("PORT", "8080"), _var("VPN_KEY", secret=True, provided="yes")]), "provided must be true or false"),
+    ("provided with generate", _template(variables=[_var("PORT", "8080"), _var("VPN_KEY", secret=True, provided=True, generate={})]), "never generated"),
+    ("provided preset", _template(variables=[_var("PORT", "8080"), _var("VPN_KEY", "x", preset=True, provided=True)]), "also a preset"),
+    ("provided with a default", _template(variables=[_var("PORT", "8080"), _var("VPN_KEY", "abc", secret=True, provided=True)]), "has a default"),
 ]
 
 
@@ -629,6 +636,8 @@ def self_test():
         ("float version", compat.strict_load(b'{"version": 14.0, "categories": [], "templates": []}'), "decimal"),
         ("unknown key", {**_doc(1), "extra": 1}, "unknown key"),
         ("unknown kind", _doc(1, [_template(variables=[_var("PORT", "8080", kind="colour")])]), "kind"),
+        ("provided not a bool", _doc(1, [_template(variables=[_var("PORT", "8080", provided="yes")])]), "provided must be"),
+        ("provided as a number", _doc(1, [_template(variables=[_var("PORT", "8080", provided=1)])]), "provided must be"),
         ("unlisted category", _doc(1, [_template(category="Other")]), "not in the top-level categories"),
         ("featured unknown id", {**_doc(1), "featured": ["nope"]}, "neither a hosted"),
         ("null optional", _doc(1, [_template(variables=[_var("PORT", "8080", help=None)])]), "is null"),
@@ -639,6 +648,10 @@ def self_test():
             failures.append(f"schema {label}: expected {expect!r}, got {found}")
     if compat.schema_problems(_doc(1)):
         failures.append(f"schema: the base document fails: {compat.schema_problems(_doc(1))}")
+    for flag in (True, False):
+        provided_doc = _doc(1, [_template(variables=[_var("PORT", "8080", provided=flag)])])
+        if compat.schema_problems(provided_doc):
+            failures.append(f"schema: provided={flag} fails: {compat.schema_problems(provided_doc)}")
 
     # 3. The app's sanity rules (mirror of TemplateSanity, R10 cases included).
     for label, template, expect in SANITY_CASES:
@@ -692,6 +705,13 @@ def self_test():
             failures.append(f"risk env file accepted {value!r}")
         except risk.ResolveError:
             pass
+    try:
+        risk.dummy_values(_template(variables=[_var("PORT", "8080", provided="yes")]))
+        failures.append("risk dummy values accepted a non-boolean provided")
+    except risk.ResolveError:
+        pass
+    if risk.dummy_values(_template(variables=[_var("VPN_KEY", secret=True, provided=True)])) != {"VPN_KEY": "dummy-secret"}:
+        failures.append("risk dummy values: a provided secret does not get the secret dummy")
     for key in risk.HOST_FILE_KEYS:
         try:
             risk.resolve(_with_compose(f"services:\n  a:\n    image: x\n    {key}: /etc/passwd\n"), ("false",))
