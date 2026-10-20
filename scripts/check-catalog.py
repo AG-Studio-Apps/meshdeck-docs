@@ -22,7 +22,9 @@ Gates, in order (any FAIL exits 1):
                   default or option values; no session or COMPOSE_/DOCKER_/... keys, upper-cased);
                   YAML numeric escapes; the compose refusals (include, name, extends file,
                   driver_opts device, secrets/configs file or environment, and the R10 forms that
-                  carry them: aliases, merge keys, flow documents, explicit and tagged keys, ---).
+                  carry them: aliases, merge keys, flow documents, explicit and tagged keys, ---);
+                  the host-side keys use_api_socket, provider and build, anywhere, as a key or
+                  inside a flow value (James, 2026-10-20: both apps refuse them too).
   text            no app name in any template text, no em-dash or en-dash in display text, no
                   published default on a secret; a `provided` variable has no generate, preset
                   or default.
@@ -520,6 +522,15 @@ def _var(key, default="", secret=False, preset=False, **extra):
 SANITY_CASES = [
     # (name, template, expected substring in problems() or None for clean)
     ("base passes", _template(), None),
+    ("use_api_socket key", _with_compose("services:\n  a:\n    image: x\n    use_api_socket: true\n"), "'use_api_socket'"),
+    ("provider key", _with_compose("services:\n  a:\n    provider:\n      type: model\n"), "'provider'"),
+    ("build key", _with_compose("services:\n  a:\n    build: .\n"), "'build'"),
+    ("build in a flow value", _with_compose("services:\n  a: {image: x, build: .}\n"), "'build'"),
+    ("quoted provider in a flow value", _with_compose("services:\n  a: {\"provider\": {type: model}}\n"), "'provider'"),
+    ("host-side word that is not a key", _with_compose("services:\n  a:\n    image: x\n    command: [\"echo\", \"build\", \"provider\"]\n"), None),
+    ("host-side word only in a variable's help", _with_compose(
+        "services:\n  a:\n    image: x\n    environment:\n      VPN: ${VPN}\n",
+        [_var("VPN", help="The provider's key, from your build page")]), None),
     ("one-line JSON document", _with_compose('{"include": ["x.yml"], "services": {}}\n'), "'{'"),
     ("top-level include", _with_compose("include:\n  - x.yml\nservices:\n  a:\n    image: x\n"), "'include'"),
     ("top-level name", _with_compose("name: other\nservices:\n  a:\n    image: x\n"), "'name'"),

@@ -357,6 +357,9 @@ def mentions_key(key, value):
     return False
 
 
+HOST_SIDE_KEYS = ("use_api_socket", "provider", "build")
+
+
 def refusals(compose):
     """4.3 item 7's compose forms and the YAML forms (R10) that would carry them past a line reader.
     A list of (line, key)."""
@@ -397,6 +400,12 @@ def refusals(compose):
         if line.key != "extends" and flow and mentions_key("extends", line.value) and (
                 alias or mentions_key("file", line.value) or mentions_key("<<", line.value)):
             refuse("extends")
+        # The host-side keys (James, 2026-10-20): compose reaches the engine socket, builds on
+        # the host or runs a provider binary there. Refused anywhere, as a key or inside a flow
+        # value, as both apps' TemplateSanity refuses them (catalog_risk still names them too).
+        for key in HOST_SIDE_KEYS:
+            if line.key == key or (flow and mentions_key(key, line.value)):
+                refuse(key)
         if top not in guarded or not ((line.path and line.path[0] == top) or not line.path):
             continue
         if line.key == "<<" or (flow and mentions_key("<<", line.value)):
