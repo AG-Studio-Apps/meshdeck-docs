@@ -679,6 +679,21 @@ def self_test():
             failures.append(f"text {label}: expected {expect!r}, got {found}")
     print(f"sanity: {len(SANITY_CASES)} cases, text: {len(TEXT_CASES)} cases")
 
+    # 3b. The parity cases shared with meshDeckShared's TemplateSanityParityTests (a copy of its
+    # Tests/MeshDeckTestSupport/Fixtures/template-sanity/cases.json): the same verdict in both, where
+    # the CI hides a template when app-sanity refuses it or catalog_risk would refuse a host-file word.
+    with open(os.path.join(HERE, "fixtures", "template-sanity", "cases.json"), encoding="utf-8") as handle:
+        parity = json.load(handle)
+    for case in parity["cases"]:
+        template = dict(parity["base"])
+        for key in ("compose", "variables", "notes"):
+            if key in case:
+                template[key] = case[key]
+        hidden = bool(sanity.problems(template)) or any(word in template["compose"] for word in risk.HOST_FILE_KEYS)
+        if hidden != case["refused"]:
+            failures.append(f"parity {case['name']}: expected refused={case['refused']}, got {sanity.problems(template)}")
+    print(f"parity: {len(parity['cases'])} cases shared with meshDeckShared")
+
     # 4. The version gate.
     base = _doc(13)
     bumped_template = _template(version=2, tagline="Changed")

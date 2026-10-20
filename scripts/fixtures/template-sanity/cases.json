@@ -1,0 +1,41 @@
+{
+  "about": "Template sanity parity cases (shared-1.9.0). Loaded by meshDeckShared's TemplateSanityParityTests and by the catalogue CI's check-catalog.py self-test, so the Swift and Python rules stay identical. Each case's template is the base below with these fields replaced. refused: whether the template must be hidden (Swift: TemplateSanity.problems is non-empty; CI: catalog_sanity.problems is non-empty or catalog_risk would refuse a host-file word). key: the refused compose key Swift reports, when one.",
+  "base": {
+    "id": "fixture", "name": "Fixture", "tagline": "A fixture", "category": "Tools", "symbol": "shippingbox",
+    "version": 1, "compose": "services:\n  app:\n    image: x\n", "variables": [], "notes": []
+  },
+  "cases": [
+    {"name": "base passes", "refused": false},
+
+    {"name": "use_api_socket key", "compose": "services:\n  app:\n    image: x\n    use_api_socket: true\n", "refused": true, "key": "use_api_socket"},
+    {"name": "provider key", "compose": "services:\n  app:\n    provider:\n      type: model\n", "refused": true, "key": "provider"},
+    {"name": "build key", "compose": "services:\n  app:\n    build: .\n", "refused": true, "key": "build"},
+    {"name": "build block with a remote context", "compose": "services:\n  app:\n    build:\n      context: https://e.x/r.git\n", "refused": true, "key": "build"},
+    {"name": "build carried in from an anchor", "compose": "x-b: &b\n  build: .\nservices:\n  app:\n    <<: *b\n", "refused": true, "key": "build"},
+    {"name": "use_api_socket in a flow value", "compose": "services:\n  app: {image: x, use_api_socket: true}\n", "refused": true, "key": "use_api_socket"},
+    {"name": "quoted build in a flow value", "compose": "services:\n  app: {\"build\" : .}\n", "refused": true, "key": "build"},
+    {"name": "build as a label key (anywhere, as shipped meshDeck 1.0.3 refuses it)", "compose": "services:\n  app:\n    image: x\n    labels:\n      build: \"1\"\n", "refused": true, "key": "build"},
+    {"name": "provider as a lowercase environment key", "compose": "services:\n  app:\n    image: x\n    environment:\n      provider: x\n", "refused": true, "key": "provider"},
+    {"name": "host-side words that are not keys", "compose": "services:\n  app:\n    image: builder\n    command: [\"--provider\", \"x\", \"build\"]\n", "refused": false},
+    {"name": "host-side words only in a variable's help", "compose": "services:\n  app:\n    image: x\n    environment:\n      VPN: ${VPN}\n", "variables": [{"key": "VPN", "label": "VPN key", "defaultValue": "", "isSecret": true, "isPreset": false, "help": "The provider's key, from your build page; no env_file needed"}], "refused": false},
+
+    {"name": "env_file key", "compose": "services:\n  app:\n    image: x\n    env_file: ./a.env\n", "refused": true, "key": "env_file"},
+    {"name": "label_file key", "compose": "services:\n  app:\n    image: x\n    label_file: ./a.labels\n", "refused": true, "key": "label_file"},
+    {"name": "env_file as plain text in a compose comment", "compose": "services:\n  app:\n    image: x # no env_file here\n", "refused": true, "key": "env_file"},
+    {"name": "env_file only in a note", "notes": ["This template needs no env_file."], "refused": false},
+
+    {"name": "top-level include", "compose": "include:\n  - other.yaml\nservices: {}\n", "refused": true, "key": "include"},
+    {"name": "top-level name", "compose": "name: other\nservices: {}\n", "refused": true, "key": "name"},
+    {"name": "extends file", "compose": "services:\n  app:\n    extends:\n      file: ../x.yaml\n", "refused": true, "key": "extends"},
+    {"name": "volume device", "compose": "services: {}\nvolumes:\n  data:\n    driver_opts:\n      device: /\n", "refused": true, "key": "driver_opts"},
+    {"name": "secret from a host file", "compose": "services: {}\nsecrets:\n  s:\n    file: /etc/shadow\n", "refused": true, "key": "secrets"},
+    {"name": "config from the environment", "compose": "services: {}\nconfigs:\n  c:\n    environment: HOME\n", "refused": true, "key": "configs"},
+    {"name": "numeric escape", "compose": "services:\n  app:\n    image: \"\\x24{HOME}\"\n", "refused": true, "key": "\\"},
+    {"name": "flow document", "compose": "{\"services\": {}}\n", "refused": true, "key": "{"},
+    {"name": "explicit key", "compose": "? include\n: x\n", "refused": true, "key": "?"},
+    {"name": "embedded config is not compose", "compose": "services: {}\nconfigs:\n  c:\n    content: |\n      include: x\n", "refused": false},
+
+    {"name": "undeclared placeholder", "compose": "services:\n  app:\n    image: $HOME/x\n", "refused": true},
+    {"name": "escaped dollar", "compose": "services:\n  app:\n    image: $$HOME\n", "refused": false}
+  ]
+}
