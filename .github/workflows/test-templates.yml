@@ -6,7 +6,9 @@
 # image rot). A second pass pins the OLDEST Compose meshDeck supports (Debian 13 stable's
 # 2.26.1) and deploys the templates that use `configs.content` for real, reading the mounted
 # file back — the only check that proves the floor, since `config -q` passes on versions
-# that fail and `up --dry-run` mounts nothing.
+# that fail and `up --dry-run` mounts nothing. A third pass runs the same check on the NEWEST
+# Compose release, so a new release that breaks a template is caught here (the weekly sweep
+# picks up each release within a week), not on a rolling-release host.
 name: Test stack templates
 on:
   push:
@@ -58,3 +60,26 @@ jobs:
         run: python3 scripts/check-compose-floor.py
         env:
           COMPOSE_BIN: docker-compose-floor
+
+      # The newest Compose release, whatever it is today (resolved at run time, so the weekly
+      # sweep follows new releases with no edit here). Checked against the release's own
+      # published checksum before it runs.
+      - name: Fetch the newest Compose
+        if: always()
+        run: |
+          tag="$(gh api repos/docker/compose/releases/latest --jq .tag_name)"
+          base="https://github.com/docker/compose/releases/download/${tag}"
+          curl -fsSL -o /tmp/docker-compose-linux-x86_64 "${base}/docker-compose-linux-x86_64"
+          curl -fsSL -o /tmp/docker-compose-linux-x86_64.sha256 "${base}/docker-compose-linux-x86_64.sha256"
+          (cd /tmp && sha256sum -c docker-compose-linux-x86_64.sha256)
+          install -m 0755 /tmp/docker-compose-linux-x86_64 /usr/local/bin/docker-compose-newest
+          test "v$(docker-compose-newest version --short)" = "$tag"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check the templates against the newest Compose
+        if: always()
+        run: python3 scripts/check-compose-floor.py
+        env:
+          COMPOSE_BIN: docker-compose-newest
+          COMPOSE_LABEL: newest
