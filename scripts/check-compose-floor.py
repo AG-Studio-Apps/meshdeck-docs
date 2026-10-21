@@ -17,11 +17,15 @@ Why this does a real deploy rather than a validation:
 
 Only starting the container and reading the file back proves it. Everything else gets the
 cheap syntax sweep.
+
+The same check also runs against the NEWEST Compose release (`COMPOSE_LABEL=newest`), so a
+release that breaks a template shows up here before it reaches someone's rolling-release host.
 """
 import json, os, re, subprocess, sys, tempfile
 
 CATALOG = os.path.join(os.path.dirname(__file__), "..", "templates.json")
 COMPOSE = os.environ.get("COMPOSE_BIN", "docker-compose-floor")
+LABEL = os.environ.get("COMPOSE_LABEL", "floor")  # "floor" or "newest": wording and project names only
 PORT = [41000]
 
 
@@ -84,9 +88,9 @@ def inline_config_targets(text):
 
 
 def check_floor(t):
-    """Deploy for real at the floor and read each mounted config back out."""
+    """Deploy for real on this Compose and read each mounted config back out."""
     targets = inline_config_targets(t["compose"])
-    project = "mdfloor-" + t["id"]
+    project = f"md{LABEL}-" + t["id"]
     env = env_for(t)
     with tempfile.TemporaryDirectory() as directory:
         path = os.path.join(directory, "compose.yaml")
@@ -101,7 +105,7 @@ def check_floor(t):
                 for target in paths:
                     read = compose(base + ["exec", "-T", service, "cat", target], env, timeout=120)
                     if read.returncode != 0 or not read.stdout.strip():
-                        return False, f"{service}:{target} was not mounted at the floor"
+                        return False, f"{service}:{target} was not mounted ({LABEL})"
             return True, f"mounted {sum(len(v) for v in targets.values())} config(s)"
         except subprocess.TimeoutExpired:
             return False, "timed out"
@@ -125,7 +129,7 @@ def sweep(t):
 
 def main():
     version = subprocess.run([COMPOSE, "version", "--short"], capture_output=True, text=True)
-    print(f"floor compose: {version.stdout.strip()}\n")
+    print(f"{LABEL} compose: {version.stdout.strip()}\n")
     all_templates = templates()
     deep = [t for t in all_templates if inline_config_targets(t["compose"])]
     print(f"{len(all_templates)} templates; {len(deep)} use configs.content and get a real deploy\n")
@@ -141,15 +145,24 @@ def main():
         ok, detail = check_floor(t)
         print(f"{'ok  ' if ok else 'FAIL'}  {t['id']}: {detail}")
         if not ok:
-            failures.append((t["id"], "floor", detail))
+            failures.append((t["id"], LABEL, detail))
 
+    if failures and LABEL == "newest":
+        print(f"\n{len(failures)} failure(s) on the newest Compose ({version.stdout.strip()}). "
+              f"People on rolling-release hosts get this version first: fix the template, or, "
+              f"if the release itself regressed, report it upstream and record it in "
+              f"docs/COMPOSE_PROVIDER_PLAN.md in the app repo.")
+        return 1
     if failures:
         print(f"\n{len(failures)} failure(s) at the floor. A template that needs a newer "
               f"Compose than {version.stdout.strip()} raises meshDeck's minimum — that is a "
               f"deliberate decision, not something to land silently. See "
               f"docs/COMPOSE_PROVIDER_PLAN.md in the app repo.")
         return 1
-    print("\nEvery template runs on the oldest Compose we promise to support.")
+    if LABEL == "newest":
+        print("\nEvery template runs on the newest Compose release.")
+    else:
+        print("\nEvery template runs on the oldest Compose we promise to support.")
     return 0
 
 
