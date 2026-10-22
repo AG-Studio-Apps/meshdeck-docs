@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "categories": [
     "Web & CMS",
     "Media",
@@ -18,7 +18,7 @@
       "tagline": "SQL database",
       "category": "Databases",
       "symbol": "cylinder.split.1x2",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_DB: ${DB_NAME}\n      POSTGRES_USER: ${DB_USER}\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    ports:\n      - \"${PORT}:5432\"\n    volumes:\n      - data:/var/lib/postgresql/data\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
@@ -40,7 +40,10 @@
           "label": "Password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -60,7 +63,7 @@
       "tagline": "SQL database",
       "category": "Databases",
       "symbol": "cylinder.split.1x2",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: ${DB_NAME}\n      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:3306\"\n    volumes:\n      - data:/var/lib/mysql\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
@@ -75,7 +78,10 @@
           "label": "Root password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -95,7 +101,7 @@
       "tagline": "SQL database (MySQL-compatible)",
       "category": "Databases",
       "symbol": "cylinder.split.1x2",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: mariadb:11\n    environment:\n      MARIADB_DATABASE: ${DB_NAME}\n      MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:3306\"\n    volumes:\n      - data:/var/lib/mysql\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
@@ -110,7 +116,10 @@
           "label": "Root password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -128,7 +137,7 @@
       "tagline": "Document database",
       "category": "Databases",
       "symbol": "cylinder.split.1x2",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: mongo:7\n    environment:\n      MONGO_INITDB_ROOT_USERNAME: ${ROOT_USER}\n      MONGO_INITDB_ROOT_PASSWORD: ${ROOT_PASSWORD}\n    ports:\n      - \"${PORT}:27017\"\n    volumes:\n      - data:/data/db\n    restart: unless-stopped\nvolumes:\n  data:\n",
       "variables": [
         {
@@ -143,7 +152,10 @@
           "label": "Root password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -777,7 +789,7 @@
       "tagline": "AI-powered photo library",
       "category": "Media",
       "symbol": "photo",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  photoprism:\n    image: photoprism/photoprism:latest\n    environment:\n      PHOTOPRISM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n      PHOTOPRISM_DATABASE_DRIVER: sqlite\n    ports:\n      - \"${PORT}:2342\"\n    volumes:\n      - storage:/photoprism/storage\n      - originals:/photoprism/originals\n    restart: unless-stopped\nvolumes:\n  storage:\n  originals:\n",
       "variables": [
         {
@@ -785,7 +797,10 @@
           "label": "Admin password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -1007,7 +1022,7 @@
       "tagline": "Publishing platform for blogs and newsletters",
       "category": "Web & CMS",
       "symbol": "globe",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: ghost\n      MYSQL_USER: ghost\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    healthcheck:\n      test: [\"CMD\", \"mysqladmin\", \"ping\", \"-h\", \"localhost\", \"-p${DB_ROOT_PASSWORD}\"]\n      interval: 5s\n      retries: 20\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  ghost:\n    image: ghost:5\n    environment:\n      url: http://localhost:${PORT}\n      database__client: mysql\n      database__connection__host: db\n      database__connection__user: ghost\n      database__connection__password: ${DB_PASSWORD}\n      database__connection__database: ghost\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:2368\"\n    volumes:\n      - content:/var/lib/ghost/content\n    restart: unless-stopped\nvolumes:\n  db:\n  content:\n",
       "variables": [
         {
@@ -1015,14 +1030,20 @@
           "label": "Database password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "DB_ROOT_PASSWORD",
           "label": "Database root password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -1042,7 +1063,7 @@
       "tagline": "Modern wiki",
       "category": "Web & CMS",
       "symbol": "globe",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_DB: wiki\n      POSTGRES_USER: wiki\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U wiki\"]\n      interval: 5s\n      retries: 20\n    volumes:\n      - db:/var/lib/postgresql/data\n    restart: unless-stopped\n  wiki:\n    image: requarks/wiki:2\n    environment:\n      DB_TYPE: postgres\n      DB_HOST: db\n      DB_PORT: \"5432\"\n      DB_USER: wiki\n      DB_PASS: ${DB_PASSWORD}\n      DB_NAME: wiki\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:3000\"\n    restart: unless-stopped\nvolumes:\n  db:\n",
       "variables": [
         {
@@ -1050,7 +1071,10 @@
           "label": "Database password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -1070,7 +1094,7 @@
       "tagline": "Documentation and knowledge base",
       "category": "Web & CMS",
       "symbol": "globe",
-      "version": 2,
+      "version": 3,
       "compose": "services:\n  db:\n    image: mariadb:11\n    environment:\n      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n      MYSQL_DATABASE: bookstack\n      MYSQL_USER: bookstack\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n    healthcheck:\n      test: [\"CMD\", \"healthcheck.sh\", \"--connect\", \"--innodb_initialized\"]\n      interval: 5s\n      retries: 25\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  bookstack:\n    image: lscr.io/linuxserver/bookstack:latest\n    environment:\n      PUID: \"1000\"\n      PGID: \"1000\"\n      TZ: Etc/UTC\n      APP_URL: http://localhost:${PORT}\n      DB_HOST: db\n      DB_PORT: \"3306\"\n      DB_USER: bookstack\n      DB_PASS: ${DB_PASSWORD}\n      DB_DATABASE: bookstack\n    depends_on:\n      db:\n        condition: service_healthy\n    ports:\n      - \"${PORT}:80\"\n    volumes:\n      - config:/config\n    restart: unless-stopped\nvolumes:\n  db:\n  config:\n",
       "variables": [
         {
@@ -1078,14 +1102,20 @@
           "label": "Database root password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "DB_PASSWORD",
           "label": "Database password",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "PORT",
@@ -1145,7 +1175,7 @@
       "tagline": "Headless CMS and data platform",
       "category": "Web & CMS",
       "symbol": "globe",
-      "version": 1,
+      "version": 2,
       "compose": "services:\n  directus:\n    image: directus/directus:latest\n    environment:\n      KEY: ${KEY}\n      SECRET: ${SECRET}\n      ADMIN_EMAIL: ${ADMIN_EMAIL}\n      ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n      DB_CLIENT: sqlite3\n      DB_FILENAME: /directus/database/data.db\n    ports:\n      - \"${PORT}:8055\"\n    volumes:\n      - database:/directus/database\n      - uploads:/directus/uploads\n    restart: unless-stopped\nvolumes:\n  database:\n  uploads:\n",
       "variables": [
         {
@@ -1153,14 +1183,20 @@
           "label": "App key",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "SECRET",
           "label": "App secret",
           "defaultValue": "",
           "isSecret": true,
-          "isPreset": false
+          "isPreset": false,
+          "generate": {
+            "charset": "alphanumeric"
+          }
         },
         {
           "key": "ADMIN_EMAIL",
