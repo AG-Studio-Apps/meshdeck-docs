@@ -1,5 +1,5 @@
 {
-  "version": 16,
+  "version": 17,
   "categories": [
     "Web & CMS",
     "Media",
@@ -9,7 +9,8 @@
     "Databases",
     "Downloads",
     "AI",
-    "Security"
+    "Security",
+    "Files"
   ],
   "templates": [
     {
@@ -2250,6 +2251,134 @@
       "notes": [
         "Glance has no authentication and is bound to localhost, reached in-app. Its config is built in; edit the stack's compose file to add your own widgets. Keep it on localhost if you add widgets that surface internal data."
       ]
+    },
+    {
+      "id": "wordpress",
+      "name": "WordPress",
+      "tagline": "Blog or site with MariaDB",
+      "category": "Web & CMS",
+      "symbol": "w.square",
+      "version": 2,
+      "compose": "services:\n  db:\n    image: mariadb:11\n    environment:\n      MARIADB_DATABASE: wordpress\n      MARIADB_USER: wordpress\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  wordpress:\n    image: wordpress:7\n    ports:\n      - \"${HTTP_PORT}:80\"\n    environment:\n      WORDPRESS_DB_HOST: db\n      WORDPRESS_DB_USER: wordpress\n      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}\n      WORDPRESS_DB_NAME: wordpress\n    volumes:\n      - wp:/var/www/html\n    depends_on:\n      - db\n    restart: unless-stopped\nvolumes:\n  db:\n  wp:\n",
+      "variables": [
+        {
+          "defaultValue": "8080",
+          "isPreset": false,
+          "isSecret": false,
+          "key": "HTTP_PORT",
+          "label": "HTTP port"
+        },
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "DB_PASSWORD",
+          "label": "Database password"
+        },
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "DB_ROOT_PASSWORD",
+          "label": "Database root password"
+        }
+      ],
+      "notes": [
+        "Open http://<host>:<HTTP port> to finish the WordPress setup."
+      ]
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud",
+      "tagline": "Files, calendar, contacts",
+      "category": "Web & CMS",
+      "symbol": "cloud",
+      "version": 2,
+      "compose": "services:\n  db:\n    image: mariadb:11\n    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW\n    environment:\n      MARIADB_DATABASE: nextcloud\n      MARIADB_USER: nextcloud\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n    restart: unless-stopped\n  app:\n    image: nextcloud:32\n    ports:\n      - \"${HTTP_PORT}:80\"\n    environment:\n      MYSQL_HOST: db\n      MYSQL_DATABASE: nextcloud\n      MYSQL_USER: nextcloud\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      NEXTCLOUD_ADMIN_USER: ${ADMIN_USER}\n      NEXTCLOUD_ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n    volumes:\n      - nextcloud:/var/www/html\n    depends_on:\n      - db\n    restart: unless-stopped\nvolumes:\n  db:\n  nextcloud:\n",
+      "variables": [
+        {
+          "defaultValue": "8081",
+          "isPreset": false,
+          "isSecret": false,
+          "key": "HTTP_PORT",
+          "label": "HTTP port"
+        },
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "DB_PASSWORD",
+          "label": "Database password"
+        },
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "DB_ROOT_PASSWORD",
+          "label": "Database root password"
+        },
+        {
+          "credential": {
+            "display": "Nextcloud admin",
+            "field": "username",
+            "group": "app",
+            "tier": "applied"
+          },
+          "defaultValue": "admin",
+          "isPreset": false,
+          "isSecret": false,
+          "key": "ADMIN_USER",
+          "label": "Admin user"
+        },
+        {
+          "credential": {
+            "display": "Nextcloud admin",
+            "field": "password",
+            "group": "app",
+            "tier": "applied"
+          },
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "ADMIN_PASSWORD",
+          "label": "Admin password"
+        }
+      ],
+      "notes": [
+        "The app sets the admin account on first install: reveal it under the web UI.",
+        "Put it behind HTTPS before exposing it.",
+        "An existing Nextcloud install upgrades one major version at a time; this template deploys a new one."
+      ]
+    },
+    {
+      "id": "nextcloud-suite",
+      "name": "Nextcloud suite",
+      "tagline": "Nextcloud with Postgres, Redis and Office",
+      "category": "Files",
+      "symbol": "cloud",
+      "version": 2,
+      "compose": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_DB: nextcloud\n      POSTGRES_USER: nextcloud\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n    volumes:\n      - db:/var/lib/postgresql/data\n    restart: unless-stopped\n  redis:\n    image: redis:7-alpine\n    restart: unless-stopped\n  app:\n    image: nextcloud:32\n    ports:\n      - \"8082:80\"\n    environment:\n      POSTGRES_HOST: db\n      POSTGRES_DB: nextcloud\n      POSTGRES_USER: nextcloud\n      POSTGRES_PASSWORD: ${DB_PASSWORD}\n      REDIS_HOST: redis\n      NEXTCLOUD_ADMIN_USER: admin\n      NEXTCLOUD_ADMIN_PASSWORD: ${ADMIN_PASSWORD}\n    volumes:\n      - app:/var/www/html\n    depends_on:\n      - db\n      - redis\n    restart: unless-stopped\n  collabora:\n    image: collabora/code:latest\n    ports:\n      - \"9980:9980\"\n    restart: unless-stopped\nvolumes:\n  db:\n  app:\n",
+      "variables": [
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "DB_PASSWORD",
+          "label": "Database password"
+        },
+        {
+          "defaultValue": "",
+          "isPreset": false,
+          "isSecret": true,
+          "key": "ADMIN_PASSWORD",
+          "label": "Admin password"
+        }
+      ],
+      "notes": [
+        "Nextcloud is on port 8082; Collabora Office runs alongside on 9980.",
+        "An existing Nextcloud install upgrades one major version at a time; this template deploys a new one."
+      ],
+      "superStack": true
     }
   ],
   "featured": [
