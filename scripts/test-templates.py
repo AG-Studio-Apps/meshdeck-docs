@@ -55,6 +55,14 @@ def test(t):
         f.write(t["compose"]); path = f.name
     base = ["docker", "compose", "-p", proj, "-f", path]
     try:
+        # The weekly full sweep pulls ~60 images; a registry's rate limit (toomanyrequests) is not a template
+        # fault, so the pull is retried with a backoff before the deploy (2026-10-26: freshrss, bookstack).
+        for wait in (5, 15, 45, None):
+            pull = run(base + ["pull", "--quiet"], env, 240)
+            if pull.returncode == 0 or "toomanyrequests" not in pull.stderr.lower() or wait is None:
+                break
+            print(f"      {t['id']:16} registry rate limit; pulling again in {wait}s", flush=True)
+            time.sleep(wait)
         up = run(base + ["up", "-d"], env, 240)
         if up.returncode != 0:
             return False, (up.stderr.strip().splitlines() or [""])[-1][:200]
