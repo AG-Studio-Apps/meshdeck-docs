@@ -6,7 +6,10 @@ compose is caught in CI before it reaches the app."""
 import json, os, subprocess, sys, tempfile, time
 
 CATALOG = os.path.join(os.path.dirname(__file__), "..", "templates.json")
-PORT = [39000]
+# Host ports for the deploys: below Linux's ephemeral range (32768-60999), so a runner's own
+# outgoing connection can't already hold one ("failed programming external connectivity",
+# 2026-11-09 kavita, 2026-11-16 pgadmin, each on a 390xx port). ~100 port variables today.
+PORT = [20000]
 
 def value_for(v):
     if "PORT" in v["key"]:
